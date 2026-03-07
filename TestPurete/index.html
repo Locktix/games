@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Test de Pureté</title>
+    <meta
+      name="description"
+      content="Teste ton niveau de pureté avec un quiz original et local."
+    />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="hero">
+        <p class="kicker">Solo · Local</p>
+        <h1>Test de Pureté</h1>
+        <p class="subtitle">3 modes, points de pénalité/récup, et questions par thème.</p>
+      </header>
+
+      <section class="panel controls">
+        <label class="name-field">
+          Prénom (optionnel)
+          <input id="player-name" type="text" maxlength="24" placeholder="Ton prénom" />
+        </label>
+
+        <div class="mode-block" aria-label="Choix du mode">
+          <p class="mode-title">Mode</p>
+          <div id="mode-grid" class="mode-grid" role="radiogroup" aria-label="Mode du test">
+            <button class="mode-btn is-active" data-mode="court" type="button">Court 25+</button>
+            <button class="mode-btn" data-mode="normal" type="button">Normal 50+</button>
+            <button class="mode-btn" data-mode="long" type="button">Long 100+</button>
+          </div>
+        </div>
+
+        <button id="start-quiz-btn" class="btn btn-primary" type="button">Commencer le test</button>
+      </section>
+
+      <section id="quiz-panel" class="panel hidden" aria-live="polite">
+        <div class="panel-head">
+          <h2>Question</h2>
+          <p id="progress-text" class="progress-text">1 / 120</p>
+        </div>
+        <div class="quiz-meta">
+          <span id="theme-badge" class="theme-badge">Amitié</span>
+        </div>
+        <div class="progress-track" aria-hidden="true">
+          <div id="progress-fill" class="progress-fill"></div>
+        </div>
+        <p id="question-text" class="question-current"></p>
+        <div class="control-actions">
+          <button id="answer-no-btn" class="btn btn-ghost" type="button">Non</button>
+          <button id="answer-yes-btn" class="btn btn-secondary" type="button">Oui</button>
+        </div>
+      </section>
+
+      <section id="result-panel" class="panel result hidden" aria-live="polite">
+        <p id="result-title" class="result-title">Score de pureté</p>
+        <p id="result-score" class="result-score">100</p>
+        <div class="meter">
+          <div id="meter-fill" class="meter-fill"></div>
+        </div>
+        <p id="result-message" class="result-message"></p>
+        <p id="result-breakdown" class="result-breakdown"></p>
+          <div class="control-actions">
+            <button id="restart-btn" class="btn btn-ghost" type="button">Recommencer</button>
+            <button id="copy-result-btn" class="btn btn-secondary" type="button">Copier le résultat</button>
+          </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

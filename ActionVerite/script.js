@@ -2,7 +2,6 @@ const screens = {
   setup: document.getElementById("setup-screen"),
   game: document.getElementById("game-screen"),
 };
-
 const playersList = document.getElementById("players-list");
 const addPlayerButton = document.getElementById("add-player-btn");
 const startGameButton = document.getElementById("start-game-btn");
@@ -10,7 +9,6 @@ const setupStatus = document.getElementById("setup-status");
 const difficultyGrid = document.getElementById("difficulty-grid");
 const difficultyButtons = Array.from(document.querySelectorAll(".difficulty-btn"));
 const playerRowTemplate = document.getElementById("player-row-template");
-
 const currentPlayerLabel = document.getElementById("current-player");
 const currentDifficultyLabel = document.getElementById("current-difficulty");
 const cardTypeLabel = document.getElementById("card-type");
@@ -19,14 +17,12 @@ const truthButton = document.getElementById("truth-btn");
 const dareButton = document.getElementById("dare-btn");
 const nextPlayerButton = document.getElementById("next-player-btn");
 const backSetupButton = document.getElementById("back-setup-btn");
-
 const DIFFICULTY_LABELS = {
   "bebe-cadum": "Bébé Cadum",
   normal: "Normal",
   spicy: "Spicy",
   infame: "Infâme",
 };
-
 const DECK = {
   "bebe-cadum": {
     truth: [
@@ -69,7 +65,13 @@ const DECK = {
       "Quel est ton fond d’écran actuel ?",
       "Tu es plutôt improvisation ou planning ?",
       "Quel est le dernier livre lu ?",
-      "Quelle est la dernière chose que tu as procrastinée ?"
+      "Quelle est la dernière chose que tu as procrastinée ?",
+      // Ajouts pour plus de "vrais" : plus authentiques et enfantins
+      "Quelle est ta plus grande peur inavouable, comme les araignées ?",
+      "As-tu déjà fait une bêtise à l'école sans te faire prendre ?",
+      "Quel est ton jouet préféré quand tu étais petit ?",
+      "Quelle est la blague la plus nulle que tu connais ?",
+      "As-tu déjà mangé quelque chose de bizarre par curiosité ?"
     ],
     dare: [
       "Fais ton meilleur cri de victoire en mode film d’action.",
@@ -111,7 +113,13 @@ const DECK = {
       "Fais 15 secondes de beatbox improvisé.",
       "Répète ‘très tristes tigres’ 5 fois vite.",
       "Mets une musique et fais un freeze dance 10 secondes.",
-      "Présente-toi comme si tu gagnais un Oscar."
+      "Présente-toi comme si tu gagnais un Oscar.",
+      // Ajouts pour plus de "vrais" : défis simples et fun
+      "Imite ton animal préféré en marchant autour de la pièce.",
+      "Raconte une histoire inventée avec des gestes exagérés.",
+      "Fais une tour avec des objets du salon en 30 secondes.",
+      "Chante une chanson d'enfance à tue-tête.",
+      "Dessine un portrait rapide d'un joueur avec tes yeux fermés."
     ]
   },
   normal: {
@@ -155,7 +163,13 @@ const DECK = {
       "Quel est ton ‘type’ de personne compliqué ?",
       "Tu préfères dire la vérité brutale ou la version douce ?",
       "Quelle est ta mauvaise habitude en couple ?",
-      "Quel est ton plus gros caprice récemment ?"
+      "Quel est ton plus gros caprice récemment ?",
+      // Ajouts pour plus de profondeur
+      "As-tu déjà menti pour éviter un embarras ?",
+      "Quelle est la plus grosse erreur que tu as commise au travail ?",
+      "As-tu déjà regretté une amitié perdue ?",
+      "Quel est ton vice caché quotidien ?",
+      "As-tu déjà été surpris en train de mentir ?"
     ],
     dare: [
       "Montre ta dernière photo prise (hors captures).",
@@ -197,7 +211,13 @@ const DECK = {
       "Fais 5 burpees (ou version simplifiée).",
       "Décris chaque joueur en 1 mot.",
       "Reste sans utiliser tes mains pendant 1 tour.",
-      "Invente un rap de 2 lignes sur le groupe."
+      "Invente un rap de 2 lignes sur le groupe.",
+      // Ajouts pour plus d'intensité modérée
+      "Montre ton historique de recherche Google récent.",
+      "Appelle un ami et chante une chanson ridicule.",
+      "Fais 20 pompes ou explique pourquoi pas.",
+      "Partage un meme embarrassant de ton téléphone.",
+      "Imite un joueur du groupe de manière exagérée."
     ]
   },
   spicy: {
@@ -241,7 +261,23 @@ const DECK = {
       "Tu t’attaches vite ?",
       "Quelle chanson décrit ta vie amoureuse actuelle ?",
       "Tu as déjà eu un crush sur quelqu’un d’indisponible ?",
-      "Quel ‘green flag’ te rassure immédiatement ?"
+      "Quel ‘green flag’ te rassure immédiatement ?",
+      // Ajouts "vraies spicy" : plus coquines et adultes
+      "Quel est l'endroit le plus fou où tu as fait l'amour ?",
+      "Quel est l'acte sexuel que tu préfères recevoir ?",
+      "Préfères-tu qu'on fasse l'amour le matin ou le soir ?",
+      "Quelle est la chose la plus coquine que tu aies imaginée avec quelqu'un ici ?",
+      "As-tu déjà envoyé des nudes ? À qui ?",
+      "Quelle est ta position sexuelle préférée ?",
+      "As-tu déjà eu un plan à trois ?",
+      "Quel est ton fantasme sexuel le plus secret ?",
+      "As-tu déjà regardé du porno avec quelqu'un ?",
+      "Quelle partie du corps te fait le plus craquer ?",
+      "As-tu déjà fait l'amour en public ?",
+      "Quel est le nombre de partenaires que tu as eu ?",
+      "As-tu déjà utilisé des jouets sexuels ?",
+      "Quelle est ta plus grande turn-on physique ?",
+      "As-tu déjà trompé quelqu'un ?"
     ],
     dare: [
       "Fais un compliment flirt à la personne de ton choix.",
@@ -283,7 +319,18 @@ const DECK = {
       "Décris ta vibe actuelle en un cocktail imaginaire.",
       "Fais 10 secondes de danse lente solo.",
       "Donne ton meilleur ‘pickup line’ ironique.",
-      "Fais un toast ‘à l’amour’ avec sérieux."
+      "Fais un toast ‘à l’amour’ avec sérieux.",
+      // Ajouts "vraies spicy" : plus coquins
+      "Fais un lap dance de 10 secondes à la personne à ta gauche.",
+      "Envoie un message coquin (fictif) à voix haute.",
+      "Embrasse sur la joue la personne de ton choix.",
+      "Décris un fantasme en 3 mots.",
+      "Imite un orgasme de film (sans exagérer).",
+      "Montre ton tatouage le plus caché (si tu en as).",
+      "Fais un strip-tease léger (enlever un accessoire).",
+      "Chuchote un secret coquin à l'oreille d'un joueur.",
+      "Pose en sous-vêtements imaginaires pour une photo fictive.",
+      "Raconte ton pire flop sexuel avec humour."
     ]
   },
   infame: {
@@ -377,7 +424,23 @@ const DECK = {
       "Quel est ton plus grand sabotage financier ou pro ?",
       "Quand as-tu choisi le confort au lieu du courage ?",
       "Quelle personne devrait entendre ‘merci’ de ta part depuis longtemps ?",
-      "Quelle décision t’obligerait à devenir enfin adulte sur un sujet clé ?"
+      "Quelle décision t’obligerait à devenir enfin adulte sur un sujet clé ?",
+      // Ajouts "vraies infame" : plus extrêmes et osés
+      "Quelle est la chose la plus illégale que tu aies jamais faite ?",
+      "As-tu déjà regardé du porno au travail ?",
+      "Quelle est la plus grosse trahison que tu aies commise ?",
+      "As-tu déjà volé quelque chose d'important ?",
+      "Quel est ton secret le plus sombre que personne ne sait ?",
+      "As-tu déjà eu des pensées taboues sur un proche ?",
+      "Quelle est la chose la plus honteuse que tu aies faite ivre ?",
+      "As-tu déjà manipulé quelqu'un pour du sexe ?",
+      "Quel est ton plus grand mensonge à un partenaire ?",
+      "As-tu déjà eu une addiction cachée ?",
+      "Quelle est la pire vengeance que tu aies planifiée ?",
+      "As-tu déjà couché avec quelqu'un pour de l'argent ou un avantage ?",
+      "Quel est ton plus grand regret sexuel ?",
+      "As-tu déjà stalké quelqu'un obsessivement ?",
+      "Quelle est la chose la plus cruelle que tu aies dite ?"
     ],
     dare: [
       "Regarde chaque joueur dans les yeux et dis une qualité + un défaut (respectueux).",
@@ -469,15 +532,30 @@ const DECK = {
       "Choisis une distraction majeure et annonce sa limite quotidienne.",
       "Écris une phrase d’auto-respect et lis-la debout.",
       "Annonce la conversation difficile que tu vas avoir, et quand.",
-      "Termine ton tour par ‘je passe à l’action maintenant’."
+      "Termine ton tour par ‘je passe à l’action maintenant’.",
+// Ajouts "vraies infame" : plus osés et extrêmes
+      "Appelle un ex et dis-lui que tu penses encore à lui/elle (ou simule).",
+      "Lèche le cou de la personne à ta gauche (avec consentement).",
+      "Raconte ton histoire la plus embarrassante en détail.",
+      "Enlève un vêtement et reste comme ça 2 tours.",
+      "Partage ton historique porno récent (anonymisé).",
+      "Fais un appel anonyme à un ami et confesse un mensonge.",
+      "Imite une scène intime d'un film devant le groupe.",
+      "Écris un message osé à un crush et montre-le (sans envoyer).",
+      "Avoue un vol mineur du passé.",
+      "Fais 50 pompes nu(e) (ou en sous-vêtements, avec consentement).",
+      "Raconte une trahison que tu as subie ou commise.",
+      "Embrasse passionnément un oreiller en démonstration.",
+      "Partage un secret tabou avec le groupe.",
+      "Danse sensuellement sur une chanson choisie par le groupe.",
+      "Appelle tes parents et dis un mensonge ridicule."
     ]
   }
 };
-
 const GENERATED_PROMPTS_CONFIG = {
   "bebe-cadum": {
-    truthCount: 140,
-    dareCount: 140,
+    truthCount: 200, // Augmenté pour plus de variété
+    dareCount: 200,
     truthTemplates: [
       "Si tu pouvais améliorer {topic} dans ta vie, tu commencerais par quoi ?",
       "Quel est ton souvenir le plus drôle lié à {topic} ?",
@@ -488,7 +566,10 @@ const GENERATED_PROMPTS_CONFIG = {
       "Quand tu penses à {topic}, qu’est-ce qui te fait sourire ?",
       "Quelle habitude cool autour de {topic} veux-tu garder toute ta vie ?",
       "Quel est ton meilleur souvenir de groupe autour de {topic} ?",
-      "Si {topic} devenait un challenge, comment tu le gagnerais ?"
+      "Si {topic} devenait un challenge, comment tu le gagnerais ?",
+      // Ajouts pour "vrais" : plus authentiques
+      "Quelle est ta plus grosse bêtise liée à {topic} ?",
+      "As-tu déjà ri aux larmes à cause de {topic} ?"
     ],
     dareTemplates: [
       "Fais une mini scène de {topic} pendant 12 secondes.",
@@ -500,19 +581,24 @@ const GENERATED_PROMPTS_CONFIG = {
       "Fais un slogan positif sur {topic}.",
       "Joue {topic} en mode présentateur TV.",
       "Fais une version épique de {topic} en 10 secondes.",
-      "Invente un cri d’équipe sur {topic}."
+      "Invente un cri d’équipe sur {topic}.",
+      // Ajouts
+      "Imite un son lié à {topic} de manière drôle.",
+      "Crée un objet imaginaire avec {topic}."
     ],
     topics: [
       "les vacances", "l’école", "les amis", "la musique", "les films", "la cuisine", "le sport", "les jeux vidéo",
       "les transports", "les animaux", "les soirées", "la famille", "les réseaux sociaux", "la mode", "les cadeaux",
       "les blagues", "les photos", "les applis", "les souvenirs d’enfance", "les séries", "les week-ends", "les repas",
       "les voyages", "les habitudes du matin", "les routines du soir", "les passions", "les playlists", "les challenges",
-      "les cours", "les projets persos"
+      "les cours", "les projets persos",
+      // Ajouts pour variété
+      "les anniversaires", "les fêtes", "les rêves"
     ]
   },
   normal: {
-    truthCount: 140,
-    dareCount: 140,
+    truthCount: 200,
+    dareCount: 200,
     truthTemplates: [
       "Quelle vérité inconfortable as-tu sur {topic} ?",
       "Qu’est-ce que tu fais semblant de maîtriser concernant {topic} ?",
@@ -523,7 +609,10 @@ const GENERATED_PROMPTS_CONFIG = {
       "Si tu pouvais refaire une décision sur {topic}, laquelle ?",
       "Quel comportement tu veux changer vis-à-vis de {topic} ?",
       "Quelle peur cachée influence tes choix en {topic} ?",
-      "Quel mensonge ‘pratique’ tu racontes sur {topic} ?"
+      "Quel mensonge ‘pratique’ tu racontes sur {topic} ?",
+      // Ajouts pour profondeur
+      "As-tu déjà échoué spectaculairement en {topic} ?",
+      "Quelle excuse utilises-tu souvent pour {topic} ?"
     ],
     dareTemplates: [
       "Donne une version honnête de ton avis sur {topic} en 12 secondes.",
@@ -535,19 +624,24 @@ const GENERATED_PROMPTS_CONFIG = {
       "Choisis un joueur et demande-lui un feedback sur {topic}.",
       "Fais un engagement public lié à {topic} pour cette semaine.",
       "Dis ce que tu arrêtes de faire concernant {topic}, maintenant.",
-      "Raconte ton dernier fail sur {topic} avec autodérision."
+      "Raconte ton dernier fail sur {topic} avec autodérision.",
+      // Ajouts
+      "Partage un secret modéré sur {topic}.",
+      "Imite une erreur commune en {topic}."
     ],
     topics: [
       "la confiance", "l’amitié", "la communication", "la jalousie", "les priorités", "la discipline", "l’organisation",
       "les habitudes", "les excuses", "la sincérité", "les relations", "le stress", "la pression sociale", "l’argent",
       "le travail", "les études", "les objectifs", "la procrastination", "l’ego", "la fierté", "les réseaux sociaux",
       "le sommeil", "la santé", "la constance", "les conflits", "les limites", "les promesses", "la motivation",
-      "les choix difficiles", "la gestion du temps"
+      "les choix difficiles", "la gestion du temps",
+      // Ajouts
+      "les regrets", "les mensonges", "les peurs"
     ]
   },
   spicy: {
-    truthCount: 140,
-    dareCount: 140,
+    truthCount: 200,
+    dareCount: 200,
     truthTemplates: [
       "Quelle est ta vérité la plus osée sur {topic} ?",
       "Quel détail sur {topic} te fait craquer instantanément ?",
@@ -558,7 +652,13 @@ const GENERATED_PROMPTS_CONFIG = {
       "Quelle limite claire tu as sur {topic} ?",
       "Quel souvenir marquant as-tu sur {topic} ?",
       "Qu’est-ce que tu n’avoues pas facilement sur {topic} ?",
-      "Quelle préférence assumée as-tu en {topic} ?"
+      "Quelle préférence assumée as-tu en {topic} ?",
+      // Modifications pour "vraies spicy" : plus hot
+      "Quel fantasme sexuel as-tu lié à {topic} ?",
+      "As-tu déjà eu une expérience coquine avec {topic} ?",
+      "Quelle partie de {topic} te rend excité(e) ?",
+      "Quel secret intime caches-tu sur {topic} ?",
+      "Préfères-tu {topic} soft ou hardcore ?"
     ],
     dareTemplates: [
       "Fais une version dramatique de {topic} pendant 10 secondes.",
@@ -570,26 +670,83 @@ const GENERATED_PROMPTS_CONFIG = {
       "Lis une phrase sur {topic} avec une voix très théâtrale.",
       "Invente un titre de film autour de {topic}.",
       "Donne ton conseil numéro 1 sur {topic}.",
-      "Fais un toast court sur {topic}."
+      "Fais un toast court sur {topic}.",
+      // Modifications pour plus coquin
+      "Mime un geste sensuel lié à {topic}.",
+      "Envoie un compliment hot sur {topic} à voix haute.",
+      "Fais une danse érotique légère inspirée de {topic}.",
+      "Décris un scénario intime avec {topic}.",
+      "Imite un baiser passionné sur {topic}."
     ],
     topics: [
       "le flirt", "les crushs", "les messages", "les dates", "la séduction", "les compliments", "le charisme",
       "la jalousie", "les red flags", "les green flags", "les relations", "les ex", "les non-dits", "les limites",
       "les intentions", "les signaux mixtes", "les rendez-vous", "les premiers pas", "les affinités", "les vibes",
       "les coups de foudre", "les conversations tardives", "les regards", "les textos", "la complicité", "les attentes",
-      "la sincérité", "les malentendus", "les ruptures", "les réconciliations"
+      "la sincérité", "les malentendus", "les ruptures", "les réconciliations",
+      // Ajouts pour hot
+      "les fantasmes", "le sexe", "les positions", "les jouets", "les lieux publics"
+    ]
+  },
+  infame: {
+    truthCount: 200,
+    dareCount: 200,
+    truthTemplates: [
+      "Quelle est ta vérité la plus osée sur {topic} ?",
+      "Quel détail tabou sur {topic} n'avoues-tu jamais ?",
+      "Quel est ton plus gros regret extrême lié à {topic} ?",
+      "Quel comportement infâme as-tu eu avec {topic} ?",
+      "Quelle limite as-tu franchie en {topic} ?",
+      "Quel secret sombre caches-tu sur {topic} ?",
+      "Si tu pouvais refaire un acte infâme en {topic}, lequel ?",
+      "Quelle peur extrême influence {topic} ?",
+      "Quel mensonge scandaleux as-tu dit sur {topic} ?",
+      "Quelle contradiction honteuse as-tu en {topic} ?",
+      // Modifications pour "vraies infame" : plus extrêmes
+      "As-tu déjà commis quelque chose d'illégal en {topic} ?",
+      "Quel fantasme tabou as-tu sur {topic} ?",
+      "Quelle trahison as-tu faite liée à {topic} ?",
+      "As-tu déjà manipulé pour {topic} ?",
+      "Quel secret le plus honteux sur {topic} ?"
+    ],
+    dareTemplates: [
+      "Donne une version honnête et extrême de ton avis sur {topic}.",
+      "Fais un débat scandaleux sur {topic}.",
+      "Fais 20 squats puis avoue un secret sur {topic}.",
+      "Résume ton pire moment en {topic} en 1 phrase.",
+      "Fais un pitch osé sur {topic}.",
+      "Donne 3 actions infâmes pour {topic}.",
+      "Demande un feedback extrême sur {topic}.",
+      "Fais un engagement public osé lié à {topic}.",
+      "Avoue ce que tu as fait de pire en {topic}.",
+      "Raconte un fail infâme sur {topic}.",
+      // Modifications pour extrême
+      "Mime une action tabou liée à {topic}.",
+      "Partage un détail honteux sur {topic} publiquement.",
+      "Fais un défi physique osé inspiré de {topic}.",
+      "Appelle quelqu'un et confesse sur {topic}.",
+      "Imite une trahison en {topic}."
+    ],
+    topics: [
+      "la trahison", "les secrets", "les regrets", "les tabous", "les addictions", "les mensonges", "les vengeances",
+      "les manipulations", "les hontes", "les échecs", "les peurs profondes", "les obsessions", "les conflits intérieurs",
+      "les limites franchies", "les non-dits familiaux", "les blessures", "les sabotages", "les contrôles", "les abandons",
+      "les déclencheurs", "les disciplines manquantes", "les fiertés mal placées", "les rejets", "les habitudes toxiques",
+      "les pardons refusés", "les choix pour plaire", "les excuses permanentes", "les acceptations difficiles", "les cohérences manquantes",
+      "les avenirs effrayants", "les défaites amères", "les validations excessives", "les souvenirs douloureux", "les routines destructrices",
+      "les gâchis", "les mensonges identitaires", "les impostures", "les angles morts", "les jugements bloquants",
+      "les engagements rompus", "les conflits épuisants", "les vérités coûteuses", "les sabotages pros", "les conforts vs courage",
+      // Ajouts pour extrême
+      "les illégalités", "les pornos", "les tromperies", "les vols", "les addictions cachées"
     ]
   }
 };
-
 function uniquePrompts(list) {
   return [...new Set(list.map((value) => value.trim()))];
 }
-
 function buildGeneratedPrompts(config, key, count) {
   const templates = key === "truth" ? config.truthTemplates : config.dareTemplates;
   const results = [];
-
   for (let round = 0; round < 20 && results.length < count; round += 1) {
     for (let templateIndex = 0; templateIndex < templates.length; templateIndex += 1) {
       for (let topicIndex = 0; topicIndex < config.topics.length; topicIndex += 1) {
@@ -597,149 +754,115 @@ function buildGeneratedPrompts(config, key, count) {
         const topic = config.topics[(topicIndex + round) % config.topics.length];
         const prompt = template.replace("{topic}", topic);
         results.push(prompt);
-
         if (results.length >= count) {
           break;
         }
       }
-
       if (results.length >= count) {
         break;
       }
     }
   }
-
   return uniquePrompts(results).slice(0, count);
 }
-
 function extendDeckWithGeneratedPrompts() {
   Object.entries(GENERATED_PROMPTS_CONFIG).forEach(([difficulty, config]) => {
     const generatedTruth = buildGeneratedPrompts(config, "truth", config.truthCount);
     const generatedDare = buildGeneratedPrompts(config, "dare", config.dareCount);
-
     DECK[difficulty].truth = uniquePrompts([...DECK[difficulty].truth, ...generatedTruth]);
     DECK[difficulty].dare = uniquePrompts([...DECK[difficulty].dare, ...generatedDare]);
   });
 }
-
 extendDeckWithGeneratedPrompts();
-
 const state = {
   players: [],
   currentIndex: 0,
   difficulty: "bebe-cadum",
 };
-
 function setScreen(screenName) {
   Object.entries(screens).forEach(([key, node]) => {
     node.classList.toggle("active", key === screenName);
   });
 }
-
 function createPlayerRow(defaultValue = "") {
   const node = playerRowTemplate.content.firstElementChild.cloneNode(true);
   const input = node.querySelector(".player-input");
   const removeButton = node.querySelector(".remove-player-btn");
-
   input.value = defaultValue;
   removeButton.addEventListener("click", () => {
     node.remove();
     setupStatus.textContent = "";
   });
-
   return node;
 }
-
 function collectPlayers() {
   const inputs = Array.from(playersList.querySelectorAll(".player-input"));
   const names = inputs
     .map((input) => input.value.trim())
     .filter((value) => value.length > 0);
-
   const uniqueNames = [...new Set(names.map((name) => name.toLowerCase()))];
   if (uniqueNames.length !== names.length) {
     return { valid: false, message: "Chaque joueur doit avoir un nom différent." };
   }
-
   if (names.length < 2) {
     return { valid: false, message: "Ajoute au moins 2 joueurs pour lancer la partie." };
   }
-
   return { valid: true, names };
 }
-
 function pickRandomFrom(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
-
 function drawCard(type) {
   const pool = DECK[state.difficulty][type];
   const text = pickRandomFrom(pool);
-
   cardTypeLabel.textContent = type === "truth" ? "VÉRITÉ" : "ACTION";
   cardTextLabel.textContent = text;
 }
-
 function updateGameHeader() {
   currentPlayerLabel.textContent = state.players[state.currentIndex] || "Player";
   currentDifficultyLabel.textContent = DIFFICULTY_LABELS[state.difficulty];
 }
-
 function goToNextPlayer() {
   state.currentIndex = (state.currentIndex + 1) % state.players.length;
   updateGameHeader();
   cardTypeLabel.textContent = "ACTION / VÉRITÉ";
   cardTextLabel.textContent = "Choisis une carte pour continuer.";
 }
-
 addPlayerButton.addEventListener("click", () => {
   playersList.appendChild(createPlayerRow());
   setupStatus.textContent = "";
-
   const inputs = playersList.querySelectorAll(".player-input");
   inputs[inputs.length - 1]?.focus();
 });
-
 difficultyGrid.addEventListener("click", (event) => {
   const target = event.target.closest(".difficulty-btn");
   if (!target) return;
-
   const difficulty = target.dataset.difficulty;
   if (!difficulty || !DECK[difficulty]) return;
-
   state.difficulty = difficulty;
-
   difficultyButtons.forEach((button) => {
     button.classList.toggle("is-active", button === target);
   });
 });
-
 startGameButton.addEventListener("click", () => {
   const playersResult = collectPlayers();
-
   if (!playersResult.valid) {
     setupStatus.textContent = playersResult.message;
     return;
   }
-
   state.players = playersResult.names;
   state.currentIndex = 0;
-
   setupStatus.textContent = "";
   setScreen("game");
   updateGameHeader();
-
   cardTypeLabel.textContent = "ACTION / VÉRITÉ";
   cardTextLabel.textContent = "Choisis une carte pour démarrer le tour.";
 });
-
 truthButton.addEventListener("click", () => drawCard("truth"));
 dareButton.addEventListener("click", () => drawCard("dare"));
 nextPlayerButton.addEventListener("click", goToNextPlayer);
-
 backSetupButton.addEventListener("click", () => {
   setScreen("setup");
 });
-
 playersList.appendChild(createPlayerRow("Joueur 1"));
 playersList.appendChild(createPlayerRow("Joueur 2"));

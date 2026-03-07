@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Tu Préfères ?</title>
+    <meta
+      name="description"
+      content="Jeu Tu Préfères avec dilemmes psychologiques, absurdes et variés."
+    />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="hero">
+        <p class="kicker">Solo · Local</p>
+        <h1>Tu Préfères ?</h1>
+        <p class="subtitle">Dilemmes psychologiques, conneries et choix impossibles.</p>
+      </header>
+
+      <section class="panel meta">
+        <span id="category-badge" class="badge">Psychologique</span>
+        <p id="progress-text" class="progress">Dilemme 1 / 1</p>
+      </section>
+
+      <section class="panel dilemma-panel" aria-live="polite">
+        <p id="dilemma-text" class="dilemma-text">Chargement...</p>
+        <div class="choices">
+          <button id="choice-a-btn" class="choice-btn" type="button">Option A</button>
+          <button id="choice-b-btn" class="choice-btn" type="button">Option B</button>
+        </div>
+      </section>
+
+      <section class="panel stats">
+        <p id="result-text" class="result">Choisis une option 👀</p>
+        <div class="stats-grid">
+          <p><strong>Réponses:</strong> <span id="answered-count">0</span></p>
+          <p><strong>A:</strong> <span id="choice-a-count">0</span></p>
+          <p><strong>B:</strong> <span id="choice-b-count">0</span></p>
+        </div>
+      </section>
+
+      <button id="next-btn" class="btn btn-primary" type="button">Dilemme suivant</button>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
