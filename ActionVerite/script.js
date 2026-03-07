@@ -327,7 +327,57 @@ const DECK = {
       "Qu’est-ce que tu ne montres jamais en public ?",
       "Quelle émotion tu refoules le plus ?",
       "Quel est le rôle que tu joues pour plaire ?",
-      "Quel changement radical tu devrais faire maintenant ?"
+      "Quel changement radical tu devrais faire maintenant ?",
+      "Quelle conversation tu évites parce qu’elle pourrait tout changer ?",
+      "Quel est ton plus gros non-dit familial ?",
+      "Quelle part de toi veux-tu cacher à tout prix ?",
+      "Quel schéma relationnel tu reproduis malgré toi ?",
+      "À quel moment as-tu trahi tes propres valeurs ?",
+      "Quel est ton plus grand mensonge par omission ?",
+      "Quand as-tu demandé de l’aide trop tard ?",
+      "Quel conflit non réglé te prend encore de l’énergie ?",
+      "Quelle décision aurais-tu dû prendre il y a un an ?",
+      "Quel est ton plus gros ‘si seulement’ ?",
+      "Quelle est la dernière fois où tu as été cruel par fatigue ?",
+      "Quel est ton besoin que tu n’oses jamais exprimer ?",
+      "Qui t’a le plus déçu, et pourquoi ?",
+      "De quoi as-tu peur si tu réussis vraiment ?",
+      "Quel est le prix caché de ton mode de vie actuel ?",
+      "Quel abandon te hante encore ?",
+      "Quelle image de toi est complètement fausse ?",
+      "Quel est ton déclencheur émotionnel numéro 1 ?",
+      "Quelle limite tu n’as pas su poser récemment ?",
+      "Quel est ton plus grand manque de discipline ?",
+      "Sur quel sujet te mens-tu encore ?",
+      "Quand as-tu confondu fierté et orgueil ?",
+      "Quel est ton réflexe toxique quand tu te sens rejeté ?",
+      "Quelle relation maintiens-tu par habitude, pas par envie ?",
+      "Quel pardon tu t’interdis encore à toi-même ?",
+      "Quel choix prends-tu pour faire plaisir plutôt que pour être aligné ?",
+      "Quel échec as-tu transformé en excuse permanente ?",
+      "Quelle est la chose la plus difficile à accepter sur toi ?",
+      "Quand as-tu dit ‘ça va’ alors que c’était faux ?",
+      "Quel est ton plus gros manque de cohérence entre paroles et actes ?",
+      "Quelle vérité sur ton avenir te fait peur ?",
+      "Quel est ton comportement le plus passif-agressif ?",
+      "Quelle défaite te rend encore amer ?",
+      "Quel besoin de validation dirige trop ta vie ?",
+      "Quel souvenir tu revis quand tu doutes de toi ?",
+      "Quelle partie de ta routine t’éloigne de ce que tu veux vraiment ?",
+      "Quel est ton plus gros gâchis de potentiel ?",
+      "Quelle peur te fait rester dans l’entre-deux ?",
+      "Quel mensonge répété est devenu ton identité ?",
+      "Quel est le dernier moment où tu t’es senti imposteur ?",
+      "Quel est ton angle mort en amitié ?",
+      "Quel jugement te bloque encore aujourd’hui ?",
+      "Quel engagement as-tu rompu sans jamais réparer ?",
+      "Quelle chose simple te ferait du bien mais tu refuses de faire ?",
+      "Quel conflit intérieur est le plus épuisant en ce moment ?",
+      "Quelle vérité sur l’amour t’a coûté le plus cher ?",
+      "Quel est ton plus grand sabotage financier ou pro ?",
+      "Quand as-tu choisi le confort au lieu du courage ?",
+      "Quelle personne devrait entendre ‘merci’ de ta part depuis longtemps ?",
+      "Quelle décision t’obligerait à devenir enfin adulte sur un sujet clé ?"
     ],
     dare: [
       "Regarde chaque joueur dans les yeux et dis une qualité + un défaut (respectueux).",
@@ -369,10 +419,210 @@ const DECK = {
       "Donne un conseil honnête à quelqu’un (avec tact).",
       "Exprime une peur en une phrase puis sa contre-action.",
       "Fais un mini pacte de progression pour la semaine.",
-      "Conclue avec: ‘je me choisis, maintenant’."
+      "Conclue avec: ‘je me choisis, maintenant’.",
+      "Fais une liste de 3 excuses que tu utilises, puis barre-les à voix haute.",
+      "Annonce un objectif précis pour 7 jours, avec date et heure.",
+      "Dis ‘non’ fermement trois fois comme entraînement à poser une limite.",
+      "Fais 45 secondes de gainage puis annonce ton prochain acte courageux.",
+      "Demande à un joueur une question difficile et réponds sans détour.",
+      "Lis ta dernière note perso (ou écris-en une) sur ce que tu évites.",
+      "Choisis une peur et propose un mini plan en 3 étapes.",
+      "Écris une phrase d’excuse sincère (fictive ou réelle) puis lis-la.",
+      "Raconte un échec en 15 secondes sans te dévaloriser.",
+      "Fais 20 secondes de respiration carrée (4-4-4-4) en silence.",
+      "Énonce une limite claire que tu appliques dès aujourd’hui.",
+      "Fais un pitch de 20 secondes de ton ‘nouveau toi’.",
+      "Transforme une plainte actuelle en action concrète.",
+      "Pose une question inconfortable à un joueur (respectueuse), puis réponds à la même.",
+      "Fais 10 fentes puis dis une vérité que tu évites depuis trop longtemps.",
+      "Écris un engagement sur ton téléphone et mets un rappel maintenant.",
+      "Donne un feedback honnête et bienveillant à un joueur.",
+      "Décris ton pire scénario, puis ton meilleur scénario, en 20 secondes.",
+      "Dis ce que tu refuses de tolérer désormais, en une phrase.",
+      "Annonce une habitude à supprimer et son remplacement exact.",
+      "Fais 30 secondes en posture droite, puis parle avec assurance.",
+      "Raconte un moment où tu as fui, puis ce que tu ferais différemment.",
+      "Fais un mini contrat verbal: ‘si je reporte, alors…’.",
+      "Pose ton téléphone face cachée pendant 2 tours et explique pourquoi.",
+      "En 10 secondes, cite 3 priorités non négociables.",
+      "Fais une déclaration ‘je mérite…’ en regardant un point fixe.",
+      "Donne un délai public à une décision que tu repousses.",
+      "Exprime une colère de façon posée, sans accusation.",
+      "Écris une phrase de clôture pour une relation/situation toxique (fictive).",
+      "Fais 25 squats puis annonce une action inconfortable sous 24h.",
+      "Demande un conseil à un joueur et reformule-le clairement.",
+      "Parle 30 secondes uniquement au présent (pas de ‘demain’, pas de ‘avant’).",
+      "Fais un check-in émotionnel: 3 mots, pas plus.",
+      "Nomme une vérité, une peur, une action, dans cet ordre.",
+      "Lis à voix haute ‘ce que je ne veux plus normaliser’.",
+      "Propose un défi positif au groupe pour la semaine.",
+      "Dis un merci direct à quelqu’un ici pour quelque chose de précis.",
+      "Fais 15 secondes de silence, puis une phrase ultra honnête.",
+      "Résume ton problème principal en 7 mots maximum.",
+      "Fais un plan d’urgence anti-procrastination en 3 phrases.",
+      "Prends 20 secondes et choisis ce que tu arrêtes dès ce soir.",
+      "Énonce une vérité difficile sans te justifier après.",
+      "Fais une promesse réalisable devant le groupe et répète-la deux fois.",
+      "Raconte un moment de honte et ce que ça t’a appris.",
+      "Donne un exemple où tu as été injuste, puis corrige en une phrase.",
+      "Fais un toast à la discipline, pas à la motivation.",
+      "Choisis une distraction majeure et annonce sa limite quotidienne.",
+      "Écris une phrase d’auto-respect et lis-la debout.",
+      "Annonce la conversation difficile que tu vas avoir, et quand.",
+      "Termine ton tour par ‘je passe à l’action maintenant’."
     ]
   }
 };
+
+const GENERATED_PROMPTS_CONFIG = {
+  "bebe-cadum": {
+    truthCount: 140,
+    dareCount: 140,
+    truthTemplates: [
+      "Si tu pouvais améliorer {topic} dans ta vie, tu commencerais par quoi ?",
+      "Quel est ton souvenir le plus drôle lié à {topic} ?",
+      "Qu’est-ce qui te motive le plus quand il s’agit de {topic} ?",
+      "Quel petit secret positif sur {topic} personne ne connaît ?",
+      "Dans {topic}, quelle est ta plus grande fierté ?",
+      "Quel conseil simple donnerais-tu à un ami sur {topic} ?",
+      "Quand tu penses à {topic}, qu’est-ce qui te fait sourire ?",
+      "Quelle habitude cool autour de {topic} veux-tu garder toute ta vie ?",
+      "Quel est ton meilleur souvenir de groupe autour de {topic} ?",
+      "Si {topic} devenait un challenge, comment tu le gagnerais ?"
+    ],
+    dareTemplates: [
+      "Fais une mini scène de {topic} pendant 12 secondes.",
+      "Imite {topic} en version comique pendant 15 secondes.",
+      "Fais une action rapide liée à {topic} sans parler.",
+      "Explique {topic} comme si tu avais 8 ans.",
+      "Raconte {topic} en 5 mots maximum.",
+      "Mime {topic} et laisse le groupe deviner.",
+      "Fais un slogan positif sur {topic}.",
+      "Joue {topic} en mode présentateur TV.",
+      "Fais une version épique de {topic} en 10 secondes.",
+      "Invente un cri d’équipe sur {topic}."
+    ],
+    topics: [
+      "les vacances", "l’école", "les amis", "la musique", "les films", "la cuisine", "le sport", "les jeux vidéo",
+      "les transports", "les animaux", "les soirées", "la famille", "les réseaux sociaux", "la mode", "les cadeaux",
+      "les blagues", "les photos", "les applis", "les souvenirs d’enfance", "les séries", "les week-ends", "les repas",
+      "les voyages", "les habitudes du matin", "les routines du soir", "les passions", "les playlists", "les challenges",
+      "les cours", "les projets persos"
+    ]
+  },
+  normal: {
+    truthCount: 140,
+    dareCount: 140,
+    truthTemplates: [
+      "Quelle vérité inconfortable as-tu sur {topic} ?",
+      "Qu’est-ce que tu fais semblant de maîtriser concernant {topic} ?",
+      "Quel est ton plus gros regret lié à {topic} ?",
+      "Quel réflexe toxique tu remarques chez toi autour de {topic} ?",
+      "Quelle limite tu poses mal quand il s’agit de {topic} ?",
+      "Quel non-dit te pèse dans {topic} ?",
+      "Si tu pouvais refaire une décision sur {topic}, laquelle ?",
+      "Quel comportement tu veux changer vis-à-vis de {topic} ?",
+      "Quelle peur cachée influence tes choix en {topic} ?",
+      "Quel mensonge ‘pratique’ tu racontes sur {topic} ?"
+    ],
+    dareTemplates: [
+      "Donne une version honnête de ton avis sur {topic} en 12 secondes.",
+      "Fais un mini débat ‘pour/contre’ sur {topic} avec toi-même.",
+      "Fais 10 squats puis dis une vérité claire sur {topic}.",
+      "Résume ton plus gros apprentissage sur {topic} en 1 phrase.",
+      "Fais un pitch de 15 secondes sur comment t’améliorer en {topic}.",
+      "Donne 3 actions concrètes pour progresser en {topic}.",
+      "Choisis un joueur et demande-lui un feedback sur {topic}.",
+      "Fais un engagement public lié à {topic} pour cette semaine.",
+      "Dis ce que tu arrêtes de faire concernant {topic}, maintenant.",
+      "Raconte ton dernier fail sur {topic} avec autodérision."
+    ],
+    topics: [
+      "la confiance", "l’amitié", "la communication", "la jalousie", "les priorités", "la discipline", "l’organisation",
+      "les habitudes", "les excuses", "la sincérité", "les relations", "le stress", "la pression sociale", "l’argent",
+      "le travail", "les études", "les objectifs", "la procrastination", "l’ego", "la fierté", "les réseaux sociaux",
+      "le sommeil", "la santé", "la constance", "les conflits", "les limites", "les promesses", "la motivation",
+      "les choix difficiles", "la gestion du temps"
+    ]
+  },
+  spicy: {
+    truthCount: 140,
+    dareCount: 140,
+    truthTemplates: [
+      "Quelle est ta vérité la plus osée sur {topic} ?",
+      "Quel détail sur {topic} te fait craquer instantanément ?",
+      "Quel est ton plus gros turn-off lié à {topic} ?",
+      "Quel scénario secret imagines-tu sur {topic} ?",
+      "Quelle contradiction tu as dans {topic} ?",
+      "Quel est ton red flag perso autour de {topic} ?",
+      "Quelle limite claire tu as sur {topic} ?",
+      "Quel souvenir marquant as-tu sur {topic} ?",
+      "Qu’est-ce que tu n’avoues pas facilement sur {topic} ?",
+      "Quelle préférence assumée as-tu en {topic} ?"
+    ],
+    dareTemplates: [
+      "Fais une version dramatique de {topic} pendant 10 secondes.",
+      "Invente une phrase de flirt sur {topic}.",
+      "Mime une scène liée à {topic} sans parler.",
+      "Raconte {topic} en mode bande-annonce romantique.",
+      "Donne 3 green flags sur {topic} en 8 secondes.",
+      "Fais une pub imaginaire sur {topic}.",
+      "Lis une phrase sur {topic} avec une voix très théâtrale.",
+      "Invente un titre de film autour de {topic}.",
+      "Donne ton conseil numéro 1 sur {topic}.",
+      "Fais un toast court sur {topic}."
+    ],
+    topics: [
+      "le flirt", "les crushs", "les messages", "les dates", "la séduction", "les compliments", "le charisme",
+      "la jalousie", "les red flags", "les green flags", "les relations", "les ex", "les non-dits", "les limites",
+      "les intentions", "les signaux mixtes", "les rendez-vous", "les premiers pas", "les affinités", "les vibes",
+      "les coups de foudre", "les conversations tardives", "les regards", "les textos", "la complicité", "les attentes",
+      "la sincérité", "les malentendus", "les ruptures", "les réconciliations"
+    ]
+  }
+};
+
+function uniquePrompts(list) {
+  return [...new Set(list.map((value) => value.trim()))];
+}
+
+function buildGeneratedPrompts(config, key, count) {
+  const templates = key === "truth" ? config.truthTemplates : config.dareTemplates;
+  const results = [];
+
+  for (let round = 0; round < 20 && results.length < count; round += 1) {
+    for (let templateIndex = 0; templateIndex < templates.length; templateIndex += 1) {
+      for (let topicIndex = 0; topicIndex < config.topics.length; topicIndex += 1) {
+        const template = templates[templateIndex];
+        const topic = config.topics[(topicIndex + round) % config.topics.length];
+        const prompt = template.replace("{topic}", topic);
+        results.push(prompt);
+
+        if (results.length >= count) {
+          break;
+        }
+      }
+
+      if (results.length >= count) {
+        break;
+      }
+    }
+  }
+
+  return uniquePrompts(results).slice(0, count);
+}
+
+function extendDeckWithGeneratedPrompts() {
+  Object.entries(GENERATED_PROMPTS_CONFIG).forEach(([difficulty, config]) => {
+    const generatedTruth = buildGeneratedPrompts(config, "truth", config.truthCount);
+    const generatedDare = buildGeneratedPrompts(config, "dare", config.dareCount);
+
+    DECK[difficulty].truth = uniquePrompts([...DECK[difficulty].truth, ...generatedTruth]);
+    DECK[difficulty].dare = uniquePrompts([...DECK[difficulty].dare, ...generatedDare]);
+  });
+}
+
+extendDeckWithGeneratedPrompts();
 
 const state = {
   players: [],
