@@ -62,13 +62,21 @@
       </section>
 
       <section id="result-panel" class="panel result hidden" aria-live="polite">
-        <p id="result-title" class="result-title">Score de pureté</p>
+        <p id="result-title" class="result-title">Score de pureté (principal)</p>
         <p id="result-score" class="result-score">100</p>
         <div class="meter">
           <div id="meter-fill" class="meter-fill"></div>
         </div>
+        <p id="empathy-score" class="empathy-score">Empathie: 0/100</p>
         <p id="result-message" class="result-message"></p>
         <p id="result-breakdown" class="result-breakdown"></p>
+        <div class="radar-wrap">
+          <p class="radar-legend">
+            <span class="legend-dot legend-dot-purity"></span> Pureté par thème
+            <span class="legend-dot legend-dot-empathy"></span> Empathie par thème
+          </p>
+          <canvas id="theme-radar" width="520" height="320" aria-label="Radar des thèmes"></canvas>
+        </div>
           <div class="control-actions">
             <button id="restart-btn" class="btn btn-ghost" type="button">Recommencer</button>
             <button id="copy-result-btn" class="btn btn-secondary" type="button">Copier le résultat</button>
@@ -76,6 +84,9 @@
       </section>
     </main>
 
+    <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore-compat.js"></script>
+    <script src="../firebase-shared.js"></script>
     <script src="script.js"></script>
   </body>
 </html>

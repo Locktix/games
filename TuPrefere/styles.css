@@ -160,6 +160,31 @@ body {
   font-size: 0.93rem;
 }
 
+.stats-grid.is-revealing p {
+  animation: statsReveal 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.stats-grid.is-revealing p:nth-child(2) {
+  animation-delay: 40ms;
+}
+
+.stats-grid.is-revealing p:nth-child(3) {
+  animation-delay: 80ms;
+}
+
+@keyframes statsReveal {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+    filter: blur(1px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
 .btn {
   border: none;
   border-radius: 14px;
@@ -180,8 +205,12 @@ body {
     padding: 12px;
   }
 
-  .choices,
+  .choices {
+    grid-template-columns: 1fr;
+  }
+
   .stats-grid {
     grid-template-columns: 1fr;
+    gap: 6px;
   }
 }

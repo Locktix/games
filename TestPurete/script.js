@@ -213,11 +213,17 @@ const restartButton = document.getElementById("restart-btn");
 const resultPanel = document.getElementById("result-panel");
 const resultTitle = document.getElementById("result-title");
 const resultScore = document.getElementById("result-score");
+const empathyScoreNode = document.getElementById("empathy-score");
 const resultMessage = document.getElementById("result-message");
 const resultBreakdown = document.getElementById("result-breakdown");
 const meterFill = document.getElementById("meter-fill");
+const radarCanvas = document.getElementById("theme-radar");
 const copyResultButton = document.getElementById("copy-result-btn");
 const playerNameInput = document.getElementById("player-name");
+
+const trackGameEvent = (eventType, payload = {}) => {
+  window.GamesFirebase?.trackEvent?.("TestPurete", eventType, payload);
+};
 
 const state = {
   mode: "court",
@@ -226,8 +232,34 @@ const state = {
   negativeLoss: 0,
   positiveGain: 0,
   yesCount: 0,
+  maxNegativeLoss: 0,
+  maxPositiveGain: 0,
+  themeStats: {},
   started: false,
 };
+
+function buildThemeStats(questions) {
+  const stats = {};
+
+  questions.forEach((question) => {
+    if (!stats[question.theme]) {
+      stats[question.theme] = {
+        negativeMax: 0,
+        negativeYes: 0,
+        positiveMax: 0,
+        positiveYes: 0,
+      };
+    }
+
+    if (question.type === "negative") {
+      stats[question.theme].negativeMax += question.points;
+    } else {
+      stats[question.theme].positiveMax += question.points;
+    }
+  });
+
+  return stats;
+}
 
 function shuffle(list) {
   const copy = [...list];
@@ -271,6 +303,9 @@ function resetQuizState() {
   state.negativeLoss = 0;
   state.positiveGain = 0;
   state.yesCount = 0;
+  state.maxNegativeLoss = 0;
+  state.maxPositiveGain = 0;
+  state.themeStats = {};
   state.started = false;
 }
 
@@ -301,24 +336,155 @@ function getResultMessage(score) {
 }
 
 function computeFinalScore() {
-  const base = 100;
-  const score = Math.max(0, Math.min(100, base - state.negativeLoss + state.positiveGain));
-  return score;
+  if (state.maxNegativeLoss <= 0) {
+    return 100;
+  }
+
+  const score = Math.round((1 - state.negativeLoss / state.maxNegativeLoss) * 100);
+  return Math.max(0, Math.min(100, score));
+}
+
+function computeEmpathyScore() {
+  if (state.maxPositiveGain <= 0) {
+    return 0;
+  }
+
+  const score = Math.round((state.positiveGain / state.maxPositiveGain) * 100);
+  return Math.max(0, Math.min(100, score));
+}
+
+function drawThemeRadar(themeStats) {
+  if (!radarCanvas) {
+    return;
+  }
+
+  const context = radarCanvas.getContext("2d");
+  if (!context) {
+    return;
+  }
+
+  const labels = Object.keys(themeStats);
+  const purityValues = labels.map((label) => {
+    const stat = themeStats[label];
+    if (!stat || stat.negativeMax <= 0) {
+      return 0;
+    }
+    return Math.max(0, Math.min(100, Math.round((stat.negativeYes / stat.negativeMax) * 100)));
+  });
+
+  const empathyValues = labels.map((label) => {
+    const stat = themeStats[label];
+    if (!stat || stat.positiveMax <= 0) {
+      return 0;
+    }
+    return Math.max(0, Math.min(100, Math.round((stat.positiveYes / stat.positiveMax) * 100)));
+  });
+
+  const width = radarCanvas.width;
+  const height = radarCanvas.height;
+  const centerX = width * 0.46;
+  const centerY = height * 0.54;
+  const radius = Math.min(width, height) * 0.32;
+
+  context.clearRect(0, 0, width, height);
+
+  context.save();
+  context.strokeStyle = "rgba(255,255,255,0.18)";
+  context.lineWidth = 1;
+
+  for (let ring = 1; ring <= 4; ring += 1) {
+    const ringRadius = (radius / 4) * ring;
+    context.beginPath();
+    labels.forEach((_, index) => {
+      const angle = (Math.PI * 2 * index) / labels.length - Math.PI / 2;
+      const x = centerX + Math.cos(angle) * ringRadius;
+      const y = centerY + Math.sin(angle) * ringRadius;
+      if (index === 0) context.moveTo(x, y);
+      else context.lineTo(x, y);
+    });
+    context.closePath();
+    context.stroke();
+  }
+
+  labels.forEach((label, index) => {
+    const angle = (Math.PI * 2 * index) / labels.length - Math.PI / 2;
+    const outerX = centerX + Math.cos(angle) * radius;
+    const outerY = centerY + Math.sin(angle) * radius;
+
+    context.beginPath();
+    context.moveTo(centerX, centerY);
+    context.lineTo(outerX, outerY);
+    context.stroke();
+
+    const labelX = centerX + Math.cos(angle) * (radius + 20);
+    const labelY = centerY + Math.sin(angle) * (radius + 12);
+    context.fillStyle = "rgba(220,230,255,0.95)";
+    context.font = "600 13px Inter";
+    context.textAlign = labelX < centerX - 4 ? "right" : labelX > centerX + 4 ? "left" : "center";
+    context.textBaseline = "middle";
+    context.fillText(label, labelX, labelY);
+  });
+
+  context.beginPath();
+  purityValues.forEach((value, index) => {
+    const ratio = value / 100;
+    const angle = (Math.PI * 2 * index) / labels.length - Math.PI / 2;
+    const x = centerX + Math.cos(angle) * radius * ratio;
+    const y = centerY + Math.sin(angle) * radius * ratio;
+    if (index === 0) context.moveTo(x, y);
+    else context.lineTo(x, y);
+  });
+  context.closePath();
+  context.fillStyle = "rgba(255, 109, 143, 0.26)";
+  context.strokeStyle = "rgba(255, 109, 143, 0.95)";
+  context.lineWidth = 2;
+  context.fill();
+  context.stroke();
+
+  context.beginPath();
+  empathyValues.forEach((value, index) => {
+    const ratio = value / 100;
+    const angle = (Math.PI * 2 * index) / labels.length - Math.PI / 2;
+    const x = centerX + Math.cos(angle) * radius * ratio;
+    const y = centerY + Math.sin(angle) * radius * ratio;
+    if (index === 0) context.moveTo(x, y);
+    else context.lineTo(x, y);
+  });
+  context.closePath();
+  context.fillStyle = "rgba(83, 184, 255, 0.22)";
+  context.strokeStyle = "rgba(83, 184, 255, 0.95)";
+  context.lineWidth = 2;
+  context.fill();
+  context.stroke();
+  context.restore();
 }
 
 function showResult() {
   const score = computeFinalScore();
+  const empathyScore = computeEmpathyScore();
   const firstName = playerNameInput.value.trim();
 
   resultTitle.textContent = firstName ? `Score de pureté · ${firstName}` : "Score de pureté";
   resultScore.textContent = `${score}/100`;
+  empathyScoreNode.textContent = `Empathie (secondaire): ${empathyScore}/100`;
   resultMessage.textContent = `${getResultMessage(score)} (${state.yesCount}/${state.questions.length} réponses Oui)`;
-  resultBreakdown.textContent = `Pénalités: -${state.negativeLoss} · Récup: +${state.positiveGain} · Mode: ${state.mode}`;
+  resultBreakdown.textContent = `Pénalités: -${state.negativeLoss}/${state.maxNegativeLoss} · Empathie: +${state.positiveGain}/${state.maxPositiveGain} · Mode: ${state.mode}`;
   meterFill.style.width = `${score}%`;
+  drawThemeRadar(state.themeStats);
 
   quizPanel.classList.add("hidden");
   resultPanel.classList.remove("hidden");
   startQuizButton.classList.add("hidden");
+
+  trackGameEvent("quiz_finished", {
+    mode: state.mode,
+    score,
+    yesCount: state.yesCount,
+    totalQuestions: state.questions.length,
+    negativeLoss: state.negativeLoss,
+    positiveGain: state.positiveGain,
+    empathyScore,
+  });
 }
 
 function answerCurrentQuestion(answerYes) {
@@ -331,8 +497,14 @@ function answerCurrentQuestion(answerYes) {
     state.yesCount += 1;
     if (question.type === "negative") {
       state.negativeLoss += question.points;
+      if (state.themeStats[question.theme]) {
+        state.themeStats[question.theme].negativeYes += question.points;
+      }
     } else {
       state.positiveGain += question.points;
+      if (state.themeStats[question.theme]) {
+        state.themeStats[question.theme].positiveYes += question.points;
+      }
     }
   }
 
@@ -349,6 +521,13 @@ function answerCurrentQuestion(answerYes) {
 function startQuiz() {
   resetQuizState();
   state.questions = buildQuestionSet(state.mode);
+  state.themeStats = buildThemeStats(state.questions);
+  state.maxNegativeLoss = state.questions
+    .filter((question) => question.type === "negative")
+    .reduce((sum, question) => sum + question.points, 0);
+  state.maxPositiveGain = state.questions
+    .filter((question) => question.type === "positive")
+    .reduce((sum, question) => sum + question.points, 0);
   state.started = true;
 
   resultPanel.classList.add("hidden");
@@ -356,6 +535,11 @@ function startQuiz() {
   quizPanel.classList.remove("hidden");
 
   updateQuestionView();
+
+  trackGameEvent("quiz_started", {
+    mode: state.mode,
+    totalQuestions: state.questions.length,
+  });
 }
 
 function restartQuiz() {
@@ -367,6 +551,10 @@ function restartQuiz() {
   questionText.textContent = "";
   themeBadge.textContent = "Thème";
   progressFill.style.width = "0%";
+  if (radarCanvas) {
+    const context = radarCanvas.getContext("2d");
+    context?.clearRect(0, 0, radarCanvas.width, radarCanvas.height);
+  }
 }
 
 modeGrid.addEventListener("click", (event) => {
@@ -384,6 +572,10 @@ modeGrid.addEventListener("click", (event) => {
   if (!state.started) {
     progressText.textContent = `1 / ${MODE_LIMITS[state.mode]}`;
   }
+
+  trackGameEvent("mode_changed", {
+    mode: state.mode,
+  });
 });
 
 startQuizButton.addEventListener("click", startQuiz);
@@ -425,3 +617,7 @@ copyResultButton.addEventListener("click", async () => {
 });
 
 restartQuiz();
+
+trackGameEvent("game_loaded", {
+  mode: state.mode,
+});

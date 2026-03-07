@@ -17,6 +17,9 @@ const truthButton = document.getElementById("truth-btn");
 const dareButton = document.getElementById("dare-btn");
 const nextPlayerButton = document.getElementById("next-player-btn");
 const backSetupButton = document.getElementById("back-setup-btn");
+const trackGameEvent = (eventType, payload = {}) => {
+  window.GamesFirebase?.trackEvent?.("ActionVerite", eventType, payload);
+};
 const DIFFICULTY_LABELS = {
   "bebe-cadum": "Bébé Cadum",
   normal: "Normal",
@@ -848,6 +851,10 @@ startGameButton.addEventListener("click", () => {
   const playersResult = collectPlayers();
   if (!playersResult.valid) {
     setupStatus.textContent = playersResult.message;
+    trackGameEvent("setup_invalid", {
+      reason: playersResult.message,
+      difficulty: state.difficulty,
+    });
     return;
   }
   state.players = playersResult.names;
@@ -857,12 +864,35 @@ startGameButton.addEventListener("click", () => {
   updateGameHeader();
   cardTypeLabel.textContent = "ACTION / VÉRITÉ";
   cardTextLabel.textContent = "Choisis une carte pour démarrer le tour.";
+  trackGameEvent("game_started", {
+    difficulty: state.difficulty,
+    playersCount: state.players.length,
+  });
 });
-truthButton.addEventListener("click", () => drawCard("truth"));
-dareButton.addEventListener("click", () => drawCard("dare"));
+truthButton.addEventListener("click", () => {
+  drawCard("truth");
+  trackGameEvent("card_drawn", {
+    cardType: "truth",
+    difficulty: state.difficulty,
+  });
+});
+dareButton.addEventListener("click", () => {
+  drawCard("dare");
+  trackGameEvent("card_drawn", {
+    cardType: "dare",
+    difficulty: state.difficulty,
+  });
+});
 nextPlayerButton.addEventListener("click", goToNextPlayer);
 backSetupButton.addEventListener("click", () => {
   setScreen("setup");
+  trackGameEvent("back_to_setup", {
+    difficulty: state.difficulty,
+  });
 });
 playersList.appendChild(createPlayerRow("Joueur 1"));
 playersList.appendChild(createPlayerRow("Joueur 2"));
+
+trackGameEvent("game_loaded", {
+  difficulty: state.difficulty,
+});

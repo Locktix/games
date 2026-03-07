@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Admin Stats — Games</title>
+    <meta name="description" content="Dashboard simple des événements Firebase des jeux." />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="hero">
+        <p class="kicker">Dashboard</p>
+        <h1>Admin Stats</h1>
+        <p class="subtitle">Vue rapide des événements enregistrés dans Firestore.</p>
+      </header>
+
+      <section class="panel controls">
+        <div class="row">
+          <label for="limit-input">Événements max</label>
+          <input id="limit-input" type="number" min="50" max="2000" step="50" value="500" />
+        </div>
+        <div class="buttons">
+          <button id="refresh-btn" class="btn btn-primary" type="button">Rafraîchir</button>
+          <button id="auto-btn" class="btn btn-ghost" type="button">Auto: OFF</button>
+        </div>
+        <p id="status-text" class="status">Prêt.</p>
+      </section>
+
+      <section class="cards" aria-label="Indicateurs globaux">
+        <article class="panel card">
+          <p class="label">Total événements</p>
+          <p id="total-events" class="value">0</p>
+        </article>
+        <article class="panel card">
+          <p class="label">Jeux actifs</p>
+          <p id="total-games" class="value">0</p>
+        </article>
+        <article class="panel card">
+          <p class="label">Types d’events</p>
+          <p id="total-types" class="value">0</p>
+        </article>
+      </section>
+
+      <section class="panel">
+        <h2>Par jeu</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Jeu</th>
+                <th>Nombre</th>
+              </tr>
+            </thead>
+            <tbody id="game-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Par type d’événement</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Nombre</th>
+              </tr>
+            </thead>
+            <tbody id="event-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Par jour</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Jour</th>
+                <th>Nombre</th>
+              </tr>
+            </thead>
+            <tbody id="day-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore-compat.js"></script>
+    <script src="../firebase-shared.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

@@ -25,6 +25,10 @@ const resultTime = document.getElementById("result-time");
 const nextRoundButton = document.getElementById("next-round-btn");
 const greenFlash = document.getElementById("green-flash");
 
+const trackGameEvent = (eventType, payload = {}) => {
+  window.GamesFirebase?.trackEvent?.("WhoAmI", eventType, payload);
+};
+
 const famousNames = [
   "Kylian Mbappé — footballeur français",
   "Lionel Messi — footballeur argentin",
@@ -798,3 +802,37 @@ actionMenu.addEventListener("click", (event) => {
 
 refillPool();
 showScreen("home");
+
+trackGameEvent("game_loaded", {
+  mode: modeSelect?.value || "celebrities",
+});
+
+playButton?.addEventListener("click", () => {
+  trackGameEvent("game_started", {
+    mode: modeSelect?.value || "unknown",
+  });
+});
+
+modeSelect?.addEventListener("change", () => {
+  trackGameEvent("mode_changed", {
+    mode: modeSelect.value,
+  });
+});
+
+foundButton?.addEventListener("click", () => {
+  trackGameEvent("role_found_menu", {
+    mode: modeSelect?.value || "unknown",
+  });
+});
+
+foundQuickButton?.addEventListener("click", () => {
+  trackGameEvent("role_found_quick", {
+    mode: modeSelect?.value || "unknown",
+  });
+});
+
+nextRoundButton?.addEventListener("click", () => {
+  trackGameEvent("next_round", {
+    mode: modeSelect?.value || "unknown",
+  });
+});

@@ -265,10 +265,56 @@ body {
   color: var(--muted);
 }
 
+.empathy-score {
+  margin: 0;
+  color: #d9f3ff;
+  font-weight: 700;
+}
+
 .result-breakdown {
   margin: 0;
   color: #cddaf8;
   font-size: 0.9rem;
+}
+
+.radar-wrap {
+  margin-top: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 8px;
+}
+
+.radar-legend {
+  margin: 0 0 6px;
+  color: #dbe8ff;
+  font-size: 0.86rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  margin-right: 5px;
+}
+
+.legend-dot-purity {
+  background: #ff6d8f;
+}
+
+.legend-dot-empathy {
+  background: #53b8ff;
+}
+
+#theme-radar {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 @media (max-width: 640px) {

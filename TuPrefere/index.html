@@ -41,15 +41,18 @@
       <section class="panel stats">
         <p id="result-text" class="result">Choisis une option 👀</p>
         <div class="stats-grid">
-          <p><strong>Réponses:</strong> <span id="answered-count">0</span></p>
-          <p><strong>A:</strong> <span id="choice-a-count">0</span></p>
-          <p><strong>B:</strong> <span id="choice-b-count">0</span></p>
+          <p><strong>Votes globaux:</strong> <span id="global-total-count">0</span></p>
+          <p><strong>A global:</strong> <span id="global-a-stats">0% (0)</span></p>
+          <p><strong>B global:</strong> <span id="global-b-stats">0% (0)</span></p>
         </div>
       </section>
 
       <button id="next-btn" class="btn btn-primary" type="button">Dilemme suivant</button>
     </main>
 
+    <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore-compat.js"></script>
+    <script src="../firebase-shared.js"></script>
     <script src="script.js"></script>
   </body>
 </html>

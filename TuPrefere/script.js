@@ -1,4 +1,4 @@
-const DILEMMAS = [
+const BASE_DILEMMAS = [
   { category: "Psychologique", question: "Tu préfères vivre sans jamais recevoir de compliments ou sans jamais pouvoir en donner ?", a: "Ne jamais en recevoir", b: "Ne jamais en donner" },
   { category: "Psychologique", question: "Tu préfères connaître la date exacte de ta mort ou celle de tes proches ?", a: "La mienne", b: "Celle de mes proches" },
   { category: "Psychologique", question: "Tu préfères être aimé de tous mais incompris, ou compris par peu mais détesté par beaucoup ?", a: "Aimé mais incompris", b: "Compris mais détesté" },
@@ -52,6 +52,11 @@ const DILEMMAS = [
   { category: "WTF", question: "Tu préfères revivre tes 15 ans avec ton cerveau actuel ou repartir de zéro demain ?", a: "Revivre mes 15 ans", b: "Repartir de zéro" },
 ];
 
+const DILEMMAS = BASE_DILEMMAS.map((dilemma, index) => ({
+  ...dilemma,
+  id: `dilemma_${index + 1}`,
+}));
+
 const categoryBadge = document.getElementById("category-badge");
 const progressText = document.getElementById("progress-text");
 const dilemmaText = document.getElementById("dilemma-text");
@@ -59,16 +64,21 @@ const choiceAButton = document.getElementById("choice-a-btn");
 const choiceBButton = document.getElementById("choice-b-btn");
 const nextButton = document.getElementById("next-btn");
 const resultText = document.getElementById("result-text");
-const answeredCountNode = document.getElementById("answered-count");
-const choiceACountNode = document.getElementById("choice-a-count");
-const choiceBCountNode = document.getElementById("choice-b-count");
+const statsGridNode = document.querySelector(".stats-grid");
+const globalTotalCountNode = document.getElementById("global-total-count");
+const globalAStatsNode = document.getElementById("global-a-stats");
+const globalBStatsNode = document.getElementById("global-b-stats");
+const firebaseDb = window.GamesFirebase?.getDb?.() || null;
+const firestoreFieldValue = window.firebase?.firestore?.FieldValue;
+
+const trackGameEvent = (eventType, payload = {}) => {
+  window.GamesFirebase?.trackEvent?.("TuPrefere", eventType, payload);
+};
 
 const state = {
   order: [],
   index: 0,
   answered: 0,
-  aCount: 0,
-  bCount: 0,
   hasAnsweredCurrent: false,
 };
 
@@ -85,10 +95,120 @@ function currentDilemma() {
   return state.order[state.index];
 }
 
-function updateStats() {
-  answeredCountNode.textContent = String(state.answered);
-  choiceACountNode.textContent = String(state.aCount);
-  choiceBCountNode.textContent = String(state.bCount);
+function formatPercent(value) {
+  if (!Number.isFinite(value)) {
+    return "0%";
+  }
+  return `${Math.round(value)}%`;
+}
+
+function lockGlobalStatsUI() {
+  statsGridNode?.classList.remove("is-revealing");
+  globalTotalCountNode.textContent = "—";
+  globalAStatsNode.textContent = "Vote pour révéler";
+  globalBStatsNode.textContent = "Vote pour révéler";
+}
+
+function triggerStatsReveal() {
+  if (!statsGridNode) {
+    return;
+  }
+
+  statsGridNode.classList.remove("is-revealing");
+  void statsGridNode.offsetWidth;
+  statsGridNode.classList.add("is-revealing");
+}
+
+function updateGlobalStatsUI(aCount = 0, bCount = 0) {
+  const total = aCount + bCount;
+  const aPercent = total > 0 ? (aCount / total) * 100 : 0;
+  const bPercent = total > 0 ? (bCount / total) * 100 : 0;
+
+  globalTotalCountNode.textContent = String(total);
+  globalAStatsNode.textContent = `${formatPercent(aPercent)} (${aCount})`;
+  globalBStatsNode.textContent = `${formatPercent(bPercent)} (${bCount})`;
+  triggerStatsReveal();
+}
+
+function dilemmaStatsRef(dilemma) {
+  if (!firebaseDb || !dilemma?.id) {
+    return null;
+  }
+  return firebaseDb.collection("tuPrefereDilemmaStats").doc(dilemma.id);
+}
+
+async function loadGlobalStatsForCurrentDilemma() {
+  const dilemma = currentDilemma();
+  const ref = dilemmaStatsRef(dilemma);
+  if (!ref) {
+    updateGlobalStatsUI(0, 0);
+    return;
+  }
+
+  try {
+    const snapshot = await ref.get();
+    const data = snapshot.exists ? snapshot.data() || {} : {};
+    const aCount = Number(data.aCount) || 0;
+    const bCount = Number(data.bCount) || 0;
+    updateGlobalStatsUI(aCount, bCount);
+  } catch (error) {
+    console.warn("[TuPrefere] Impossible de charger les stats globales:", error?.message || error);
+    updateGlobalStatsUI(0, 0);
+  }
+}
+
+async function submitGlobalVote(dilemma, choice) {
+  const ref = dilemmaStatsRef(dilemma);
+  if (!ref || !choice) {
+    return;
+  }
+
+  try {
+    const increment = firestoreFieldValue?.increment;
+    const timestamp = firestoreFieldValue?.serverTimestamp;
+
+    if (increment && timestamp) {
+      await ref.set(
+        {
+          category: dilemma.category,
+          question: dilemma.question,
+          aLabel: dilemma.a,
+          bLabel: dilemma.b,
+          aCount: choice === "a" ? increment(1) : increment(0),
+          bCount: choice === "b" ? increment(1) : increment(0),
+          total: increment(1),
+          updatedAt: timestamp(),
+        },
+        { merge: true }
+      );
+    } else {
+      await firebaseDb.runTransaction(async (transaction) => {
+        const snap = await transaction.get(ref);
+        const data = snap.exists ? snap.data() || {} : {};
+        const currentA = Number(data.aCount) || 0;
+        const currentB = Number(data.bCount) || 0;
+        const nextA = choice === "a" ? currentA + 1 : currentA;
+        const nextB = choice === "b" ? currentB + 1 : currentB;
+
+        transaction.set(
+          ref,
+          {
+            category: dilemma.category,
+            question: dilemma.question,
+            aLabel: dilemma.a,
+            bLabel: dilemma.b,
+            aCount: nextA,
+            bCount: nextB,
+            total: nextA + nextB,
+            updatedAt: new Date().toISOString(),
+          },
+          { merge: true }
+        );
+      });
+    }
+  } catch (error) {
+    console.warn("[TuPrefere] Impossible d'enregistrer le vote global:", error?.message || error);
+  }
 }
 
 function updateView() {
@@ -108,27 +228,36 @@ function updateView() {
 
   state.hasAnsweredCurrent = false;
   resultText.textContent = "Choisis une option 👀";
+  lockGlobalStatsUI();
 }
 
 function answer(choice) {
   if (state.hasAnsweredCurrent) return;
 
+  const dilemma = currentDilemma();
   state.hasAnsweredCurrent = true;
   state.answered += 1;
 
   if (choice === "a") {
-    state.aCount += 1;
     choiceAButton.classList.add("is-selected");
     resultText.textContent = "Tu as choisi A.";
   } else {
-    state.bCount += 1;
     choiceBButton.classList.add("is-selected");
     resultText.textContent = "Tu as choisi B.";
   }
 
   choiceAButton.disabled = true;
   choiceBButton.disabled = true;
-  updateStats();
+  submitGlobalVote(dilemma, choice).finally(() => {
+    loadGlobalStatsForCurrentDilemma();
+  });
+
+  trackGameEvent("dilemma_answered", {
+    choice,
+    category: dilemma?.category || "unknown",
+    dilemmaId: dilemma?.id || "unknown",
+    answered: state.answered,
+  });
 }
 
 function nextDilemma() {
@@ -137,6 +266,9 @@ function nextDilemma() {
   if (state.index >= state.order.length) {
     state.order = shuffle(DILEMMAS);
     state.index = 0;
+    trackGameEvent("deck_reshuffled", {
+      total: state.order.length,
+    });
   }
 
   updateView();
@@ -169,10 +301,12 @@ function init() {
   state.order = shuffle(DILEMMAS);
   state.index = 0;
   state.answered = 0;
-  state.aCount = 0;
-  state.bCount = 0;
-  updateStats();
+  lockGlobalStatsUI();
   updateView();
+
+  trackGameEvent("game_loaded", {
+    totalDilemmas: state.order.length,
+  });
 }
 
 init();

@@ -29,12 +29,13 @@ import {
  * Remplacer les valeurs par votre projet Firebase.
  */
 const firebaseConfig = {
-  apiKey: "AIzaSyCeZdO0mVWNq8T796tP3ed-b2VTQOgzqfQ",
-  authDomain: "shady-5147b.firebaseapp.com",
-  projectId: "shady-5147b",
-  storageBucket: "shady-5147b.firebasestorage.app",
-  messagingSenderId: "672167300494",
-  appId: "1:672167300494:web:4bb5e5ffd917523d6d68df",
+  apiKey: "AIzaSyBO-a2RFOidJRyaAyS64hxkeJVW185WZFs",
+  authDomain: "games-ba575.firebaseapp.com",
+  projectId: "games-ba575",
+  storageBucket: "games-ba575.firebasestorage.app",
+  messagingSenderId: "943293078369",
+  appId: "1:943293078369:web:bc67b53c5ff58fb9608320",
+  measurementId: "G-8TR31F1FZ6",
 };
 
 const app = initializeApp(firebaseConfig);
