@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Action Vérité — Solo</title>
+    <meta
+      name="description"
+      content="Jeu Action Vérité solo : ajoute les joueurs, choisis une difficulté et lance la partie."
+    />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section id="setup-screen" class="screen active">
+        <header class="hero">
+          <p class="kicker">Mode local</p>
+          <h1>Action Vérité</h1>
+          <p class="subtitle">Version solo (pas de multi pour le moment).</p>
+        </header>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Joueurs</h2>
+            <button id="add-player-btn" class="btn btn-ghost" type="button" aria-label="Ajouter un joueur">+ Ajouter</button>
+          </div>
+          <p class="hint">Aucune limite : ajoute autant de personnes que tu veux.</p>
+          <div id="players-list" class="players-list" aria-label="Liste des joueurs"></div>
+        </article>
+
+        <article class="panel">
+          <h2>Difficulté</h2>
+          <div id="difficulty-grid" class="difficulty-grid" role="radiogroup" aria-label="Choisir la difficulté">
+            <button class="difficulty-btn is-active" data-difficulty="bebe-cadum" type="button">Bébé Cadum</button>
+            <button class="difficulty-btn" data-difficulty="normal" type="button">Normal</button>
+            <button class="difficulty-btn" data-difficulty="spicy" type="button">Spicy</button>
+            <button class="difficulty-btn" data-difficulty="infame" type="button">Infâme</button>
+          </div>
+        </article>
+
+        <button id="start-game-btn" class="btn btn-primary" type="button">Lancer la partie</button>
+        <p id="setup-status" class="status" aria-live="polite"></p>
+      </section>
+
+      <section id="game-screen" class="screen">
+        <header class="game-head">
+          <div>
+            <p class="kicker">Tour actuel</p>
+            <h2 id="current-player">Player</h2>
+          </div>
+          <span id="current-difficulty" class="difficulty-pill">Normal</span>
+        </header>
+
+        <article class="panel card-panel">
+          <p id="card-type" class="card-type">ACTION</p>
+          <p id="card-text" class="card-text">Appuie sur une carte pour commencer.</p>
+        </article>
+
+        <div class="card-actions" aria-label="Choix du type de carte">
+          <button id="truth-btn" class="btn btn-secondary" type="button">Vérité</button>
+          <button id="dare-btn" class="btn btn-secondary" type="button">Action</button>
+        </div>
+
+        <div class="game-actions">
+          <button id="next-player-btn" class="btn btn-primary" type="button">Joueur suivant</button>
+          <button id="back-setup-btn" class="btn btn-ghost" type="button">Paramètres</button>
+        </div>
+      </section>
+    </main>
+
+    <template id="player-row-template">
+      <div class="player-row">
+        <input class="player-input" type="text" maxlength="24" placeholder="Nom du joueur" />
+        <button class="remove-player-btn" type="button" aria-label="Supprimer ce joueur">✕</button>
+      </div>
+    </template>
+
+    <script src="script.js"></script>
+  </body>
+</html>
