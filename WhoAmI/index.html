@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Qui Suis-Je ?</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section id="home-screen" class="screen active">
+        <div class="logo-wrap">
+          <p class="chip">Jeu mobile</p>
+          <h1>Qui suis-je ?</h1>
+          <p class="subtitle">
+            Pose ton téléphone sur ton front.<br />
+            Les autres voient le nom, pas toi.
+          </p>
+        </div>
+
+        <div class="mode-wrap">
+          <label for="mode-select" class="subtitle">Mode de jeu</label>
+          <select id="mode-select" class="mode-select" aria-label="Choisir un mode de jeu">
+            <option value="celebrities" selected>Personnalités connues</option>
+            <option value="animals">Animaux</option>
+            <option value="objects">Objets</option>
+            <option value="countries">Pays</option>
+            <option value="all">Tout</option>
+          </select>
+        </div>
+
+        <button id="play-btn" class="btn btn-primary">Jouer</button>
+      </section>
+
+      <section id="countdown-screen" class="screen">
+        <p class="chip">Prépare-toi</p>
+        <h2>Mets le téléphone sur ton front</h2>
+        <p class="subtitle">Le mot arrive dans...</p>
+        <div id="countdown-number" class="countdown">3</div>
+      </section>
+
+      <section id="reveal-screen" class="screen">
+        <div id="name-card" class="name-card">
+          <img id="role-image" class="role-image" alt="Illustration du rôle" />
+          <div class="role-text">
+            <p id="role-name" class="role-name">Nom</p>
+            <p id="role-hint" class="role-hint">Précision</p>
+          </div>
+        </div>
+
+        <div class="reveal-actions" aria-label="Actions de la manche">
+          <button id="restart-round-btn" class="btn btn-ghost">Relancer</button>
+          <button id="change-mode-home-btn" class="btn btn-ghost">Changer de mode</button>
+          <button id="found-quick-btn" class="btn btn-ghost btn-ghost-success">J'ai découvert</button>
+        </div>
+      </section>
+    </main>
+
+    <section id="action-menu" class="action-menu" aria-hidden="true">
+      <div class="action-panel">
+        <h3>Choisis une action</h3>
+        <button id="change-person-btn" class="btn btn-primary">Changer de personne</button>
+        <button id="found-btn" class="btn btn-secondary">J'ai découvert</button>
+      </div>
+    </section>
+
+    <section id="result-overlay" class="result-overlay" aria-hidden="true">
+      <div class="result-panel">
+        <p class="chip">Bravo</p>
+        <div class="result-role-row">
+          <img id="result-role-image" class="result-role-image" alt="Illustration du rôle trouvé" />
+          <div>
+            <h3 id="result-role">Rôle</h3>
+            <p id="result-role-hint" class="subtitle">Précision</p>
+          </div>
+        </div>
+        <p id="result-time" class="subtitle">Trouvé en 0.0s</p>
+        <button id="next-round-btn" class="btn btn-primary">Nouvelle manche</button>
+      </div>
+    </section>
+
+    <div id="green-flash" class="green-flash" aria-hidden="true"></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

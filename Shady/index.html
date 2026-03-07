@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>L'Infiltré - Undercover Mobile</title>
+    <meta name="description" content="Jeu mobile Undercover en temps réel avec Firebase" />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="bg-orb bg-orb-left"></div>
+    <div class="bg-orb bg-orb-right"></div>
+
+    <div class="app-shell">
+      <header class="app-header">
+        <div class="header-actions">
+          <span id="network-status" class="network-badge is-online" aria-live="polite">En ligne</span>
+        </div>
+        <p class="header-kicker">Undercover · Mobile Game</p>
+        <h1>L'Infiltré</h1>
+        <p>Jeu social en temps réel, expérience mobile moderne.</p>
+      </header>
+
+      <main id="appMain" class="app-main">
+        <section id="view-auth" class="view is-active" data-view>
+          <div class="card card-auth">
+            <div class="section-head">
+              <h2>Bienvenue</h2>
+              <p class="section-subtitle">Connecte-toi pour rejoindre une partie.</p>
+            </div>
+
+            <div class="tab-row">
+              <button id="btn-tab-login" class="btn tab-btn is-active" type="button">Connexion</button>
+              <button id="btn-tab-signup" class="btn tab-btn" type="button">Inscription</button>
+            </div>
+
+            <form id="form-auth" class="stack">
+              <label>
+                Email
+                <input id="auth-email" type="email" placeholder="player@infiltre.gg" required />
+              </label>
+              <label>
+                Mot de passe
+                <input id="auth-password" type="password" minlength="6" placeholder="••••••••" required />
+              </label>
+              <button id="btn-auth-submit" class="btn btn-primary" type="submit">Se connecter</button>
+            </form>
+
+            <p id="auth-status" class="status-text"></p>
+          </div>
+        </section>
+
+        <section id="view-lobby" class="view" data-view>
+          <div class="card card-lobby">
+            <div class="row between center section-head-inline">
+              <div>
+                <p class="eyebrow">Salon</p>
+                <h2>Lobby Public</h2>
+              </div>
+              <button id="btn-refresh-rooms" class="btn btn-small" type="button">Rafraîchir</button>
+            </div>
+
+            <div class="panel">
+              <div class="section-head">
+                <h3>Salons disponibles</h3>
+                <p class="section-subtitle">Rejoins une partie publique en un clic.</p>
+              </div>
+              <ul id="rooms-list" class="list"></ul>
+              <p id="lobby-empty" class="status-text">Aucun salon public en cours.</p>
+            </div>
+
+            <button id="btn-open-create-room" class="btn btn-primary" type="button">Créer un salon</button>
+            <p id="lobby-status" class="status-text"></p>
+          </div>
+        </section>
+
+        <section id="view-create-room" class="view" data-view>
+          <div class="card stack">
+            <div class="row between center section-head-inline">
+              <div>
+                <p class="eyebrow">Configuration</p>
+                <h2>Nouveau salon</h2>
+              </div>
+              <button id="btn-back-lobby-from-create" class="btn btn-small" type="button">Retour</button>
+            </div>
+
+            <form id="form-create-room" class="stack compact">
+              <label>
+                Nom du salon
+                <input id="room-name" type="text" maxlength="30" placeholder="Salon de Alan" required />
+              </label>
+
+              <label>
+                Nombre de joueurs
+                <input id="room-max-players" type="number" min="3" max="15" value="6" required />
+              </label>
+
+              <label>
+                Temps de discussion (secondes)
+                <input id="room-discussion-time" type="number" min="0" max="300" value="60" required />
+              </label>
+
+              <label>
+                Temps de vote (secondes)
+                <input id="room-vote-time" type="number" min="0" max="180" value="45" required />
+              </label>
+
+              <label>
+                Nombre max de manches
+                <input id="room-max-rounds" type="number" min="2" max="12" value="6" required />
+              </label>
+
+              <div class="toggle-grid">
+                <label class="toggle">
+                  <input id="room-mr-white-enabled" type="checkbox" checked />
+                  <span>Activer Mr. White</span>
+                </label>
+                <label class="toggle">
+                  <input id="room-anonymous-vote" type="checkbox" checked />
+                  <span>Vote anonyme</span>
+                </label>
+              </div>
+
+              <button class="btn btn-primary" type="submit">Valider & créer</button>
+            </form>
+            <p id="create-room-status" class="status-text"></p>
+          </div>
+        </section>
+
+        <section id="view-profile" class="view" data-view>
+          <div class="card stack">
+            <div class="row between center section-head-inline">
+              <div>
+                <p class="eyebrow">Compte</p>
+                <h2>Profil joueur</h2>
+              </div>
+              <button id="btn-back-lobby-from-profile" class="btn btn-small" type="button">Retour</button>
+            </div>
+
+            <div class="tab-row">
+              <button id="btn-profile-tab-customize" class="btn tab-btn is-active" type="button">Personnaliser</button>
+              <button id="btn-profile-tab-badges" class="btn tab-btn" type="button">Badges</button>
+            </div>
+
+            <section id="profile-tab-customize" class="profile-tab-panel stack compact">
+              <div class="panel stack compact">
+                <p class="section-subtitle">Personnalise ton identité dans les parties.</p>
+                <label>
+                  Pseudo
+                  <input id="profile-name" type="text" maxlength="18" placeholder="Ton pseudo" />
+                </label>
+
+                <div>
+                  <p class="section-subtitle">Icône</p>
+                  <div id="profile-icon-grid" class="icon-grid">
+                    <button class="icon-option" type="button" data-icon="🕵️">🕵️</button>
+                    <button class="icon-option" type="button" data-icon="😎">😎</button>
+                    <button class="icon-option" type="button" data-icon="🐺">🐺</button>
+                    <button class="icon-option" type="button" data-icon="🦊">🦊</button>
+                    <button class="icon-option" type="button" data-icon="🐼">🐼</button>
+                    <button class="icon-option" type="button" data-icon="🤖">🤖</button>
+                    <button class="icon-option" type="button" data-icon="🦄">🦄</button>
+                    <button class="icon-option" type="button" data-icon="🔥">🔥</button>
+                    <button class="icon-option" type="button" data-icon="⚡">⚡</button>
+                    <button class="icon-option" type="button" data-icon="👑">👑</button>
+                  </div>
+                </div>
+
+                <div class="profile-preview">
+                  <span id="profile-preview-icon">🕵️</span>
+                  <strong id="profile-preview-name">Player</strong>
+                </div>
+              </div>
+
+              <div class="row gap">
+                <button id="btn-save-profile" class="btn btn-primary" type="button">Enregistrer profil</button>
+                <button id="btn-auth-logout" class="btn btn-ghost" type="button">Se déconnecter</button>
+              </div>
+              <p id="profile-status" class="status-text"></p>
+            </section>
+
+            <section id="profile-tab-badges" class="profile-tab-panel stack compact hidden">
+              <div class="panel panel-soft stack compact">
+                <p class="section-subtitle">Succès débloqués</p>
+                <ul id="profile-badges" class="badge-list"></ul>
+                <p id="profile-badge-stats" class="status-text"></p>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section id="view-room" class="view" data-view>
+          <div class="card stack">
+            <div class="row between center section-head-inline">
+              <div>
+                <p class="eyebrow">Salle</p>
+                <h2 id="room-title">Salon</h2>
+              </div>
+              <button id="btn-leave-room" class="btn btn-ghost" type="button">Quitter</button>
+            </div>
+
+            <div class="room-meta">
+              <p><strong>Hôte :</strong> <span id="room-host-name">-</span></p>
+              <p><strong>Joueurs :</strong> <span id="room-player-count">0</span>/<span id="room-player-max">0</span></p>
+              <p><strong>Vote :</strong> <span id="room-vote-type">-</span></p>
+              <p><strong>Mr. White :</strong> <span id="room-mr-white-label">-</span></p>
+              <p><strong>Temps discussion :</strong> <span id="room-discussion-time-label">-</span></p>
+              <p><strong>Temps vote :</strong> <span id="room-vote-time-label">-</span></p>
+              <p><strong>Manches max :</strong> <span id="room-max-rounds-label">-</span></p>
+            </div>
+
+            <div class="panel">
+              <h3>Participants</h3>
+              <ul id="players-list" class="list"></ul>
+            </div>
+
+            <div class="row gap">
+              <button id="btn-start-game" class="btn btn-primary" type="button">Lancer la partie</button>
+              <button id="btn-force-next" class="btn" type="button">Passer au moment des votes</button>
+            </div>
+            <p id="room-status" class="status-text"></p>
+          </div>
+        </section>
+
+        <section id="view-game" class="view" data-view>
+          <div class="card stack">
+            <div class="row between center section-head-inline">
+              <div class="stack compact game-head-left">
+                <p class="eyebrow">Game</p>
+                <h2>Partie en cours</h2>
+                <p id="round-label" class="pill">Manche 1</p>
+              </div>
+              <div class="stack compact game-head-right">
+                <div id="phase-timer-circle" class="timer-circle hidden" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-label="Temps restant">
+                  <svg viewBox="0 0 64 64" aria-hidden="true">
+                    <circle class="timer-track" cx="32" cy="32" r="26"></circle>
+                    <circle id="phase-timer-circle-progress" class="timer-progress" cx="32" cy="32" r="26"></circle>
+                  </svg>
+                  <span id="phase-timer-circle-label">--</span>
+                </div>
+              </div>
+            </div>
+
+            <article id="secret-card" class="secret-card">
+              <button id="btn-reveal-role" class="btn btn-secret-word" type="button">👁️</button>
+            </article>
+
+            <article class="phase-card">
+              <h3>Phase actuelle</h3>
+              <p id="phase-description">Distribution en cours...</p>
+            </article>
+
+            <div class="row gap">
+              <button id="btn-force-next-game" class="btn hidden" type="button">Passer au moment des votes</button>
+            </div>
+
+            <form id="form-vote" class="stack compact">
+              <label>
+                Voter contre
+                <select id="vote-target" required></select>
+              </label>
+              <button class="btn btn-primary" type="submit">Valider mon vote</button>
+            </form>
+
+            <p id="vote-progress" class="status-text"></p>
+            <p id="vote-status" class="status-text"></p>
+            <p id="elimination-feedback" class="status-text elimination-feedback hidden" aria-live="polite"></p>
+
+            <ul id="vote-feed" class="list hidden"></ul>
+          </div>
+        </section>
+
+        <section id="view-end" class="view" data-view>
+          <div class="card stack end-card">
+            <p class="eyebrow">Résultat</p>
+            <h2 id="end-title">Victoire !</h2>
+            <p id="end-subtitle">Résumé de la partie</p>
+            <div id="end-unlocks-wrap" class="panel panel-soft hidden">
+              <h3>Nouveaux badges</h3>
+              <ul id="end-unlocks" class="badge-list"></ul>
+            </div>
+            <ul id="end-reveal-list" class="list"></ul>
+
+            <div class="row gap">
+              <button id="btn-rematch" class="btn btn-primary" type="button">Rejouer (mêmes joueurs)</button>
+              <button id="btn-back-lobby" class="btn" type="button">Retour Lobby</button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <nav id="app-tabbar" class="app-tabbar hidden" aria-label="Navigation principale">
+        <button id="btn-tabbar-lobby" class="btn tabbar-btn is-active" type="button">Salon</button>
+        <button id="btn-tabbar-create" class="btn tabbar-btn" type="button">Créer</button>
+        <button id="btn-tabbar-profile" class="btn tabbar-btn" type="button">Profil</button>
+      </nav>
+
+      <footer class="app-footer">
+        <small>Version 1.0 · Designed for mobile · Firebase realtime · GitHub Pages</small>
+      </footer>
+
+      <div id="achievement-toast" class="achievement-toast" aria-live="polite" aria-atomic="true"></div>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
