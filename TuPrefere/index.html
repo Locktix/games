@@ -19,35 +19,44 @@
   </head>
   <body>
     <main class="app">
-      <header class="hero">
+      <section id="start-menu" class="panel start-menu" aria-label="Choix de version">
         <p class="kicker">Solo · Local</p>
         <h1>Tu Préfères ?</h1>
-        <p class="subtitle">Dilemmes psychologiques, conneries et choix impossibles.</p>
-      </header>
-
-      <section class="panel meta">
-        <span id="category-badge" class="badge">Psychologique</span>
-        <p id="progress-text" class="progress">Dilemme 1 / 1</p>
+        <p class="subtitle">Choisis ta version avant de commencer.</p>
+        <div id="mode-choices" class="mode-choices"></div>
       </section>
 
-      <section class="panel dilemma-panel" aria-live="polite">
-        <p id="dilemma-text" class="dilemma-text">Chargement...</p>
-        <div class="choices">
-          <button id="choice-a-btn" class="choice-btn" type="button">Option A</button>
-          <button id="choice-b-btn" class="choice-btn" type="button">Option B</button>
-        </div>
-      </section>
+      <section id="game-root" class="game-root is-hidden" aria-hidden="true">
+        <header class="hero">
+          <p class="kicker">Solo · Local</p>
+          <h1>Tu Préfères ?</h1>
+          <p class="subtitle">Dilemmes psychologiques, conneries et choix impossibles.</p>
+        </header>
 
-      <section class="panel stats">
-        <p id="result-text" class="result">Choisis une option 👀</p>
-        <div class="stats-grid">
-          <p><strong>Votes globaux:</strong> <span id="global-total-count">0</span></p>
-          <p><strong>A global:</strong> <span id="global-a-stats">0% (0)</span></p>
-          <p><strong>B global:</strong> <span id="global-b-stats">0% (0)</span></p>
-        </div>
-      </section>
+        <section class="panel meta">
+          <div class="meta-left">
+            <span id="mode-badge" class="badge badge-mode">Version normale</span>
+            <span id="category-badge" class="badge">Psychologique</span>
+          </div>
+          <p id="progress-text" class="progress">Dilemme 1 / 1</p>
+        </section>
 
-      <button id="next-btn" class="btn btn-primary" type="button">Dilemme suivant</button>
+        <section class="panel dilemma-panel" aria-live="polite">
+          <p id="dilemma-text" class="dilemma-text">Chargement...</p>
+          <div id="choices-container" class="choices"></div>
+        </section>
+
+        <section class="panel stats">
+          <p id="result-text" class="result">Choisis une option 👀</p>
+          <div class="stats-grid">
+            <p><strong>Votes globaux:</strong> <span id="global-total-count">0</span></p>
+            <p><strong>A global:</strong> <span id="global-a-stats">0% (0)</span></p>
+            <p><strong>B global:</strong> <span id="global-b-stats">0% (0)</span></p>
+          </div>
+        </section>
+
+        <button id="next-btn" class="btn btn-primary" type="button">Dilemme suivant</button>
+      </section>
     </main>
 
     <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-app-compat.js"></script>
