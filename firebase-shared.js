@@ -38,6 +38,41 @@
 
   let db = null;
   let fieldValue = null;
+  const SUPPORTED_GAMES = ["ActionVerite", "Shady", "TestPurete", "TuPrefere", "WhoAmI"];
+
+  function normalizeGameName(game) {
+    const raw = typeof game === "string" ? game.trim() : "";
+    if (!raw) {
+      return null;
+    }
+
+    const lower = raw.toLowerCase();
+    if (lower === "actionverite" || lower === "actionvérité") return "ActionVerite";
+    if (lower === "shady") return "Shady";
+    if (lower === "testpurete") return "TestPurete";
+    if (lower === "tuprefere" || lower === "tupréfère") return "TuPrefere";
+    if (lower === "whoami") return "WhoAmI";
+    return raw;
+  }
+
+  function gameDocRef(game) {
+    if (!db) {
+      return null;
+    }
+    const gameName = normalizeGameName(game);
+    if (!gameName) {
+      return null;
+    }
+    return db.collection(gameName).doc("meta");
+  }
+
+  function gameCollectionRef(game, collectionName) {
+    const rootRef = gameDocRef(game);
+    if (!rootRef || !collectionName) {
+      return null;
+    }
+    return rootRef.collection(collectionName);
+  }
 
   try {
     if (typeof firebase === "undefined") {
@@ -57,8 +92,18 @@
     }
 
     try {
-      return await db.collection("gameEvents").add({
-        game,
+      const gameName = normalizeGameName(game);
+      if (!gameName) {
+        return null;
+      }
+
+      const eventsRef = gameCollectionRef(gameName, "gameEvents");
+      if (!eventsRef) {
+        return null;
+      }
+
+      return await eventsRef.add({
+        game: gameName,
         eventType,
         payload: sanitizePayload(payload),
         pagePath: window.location.pathname,
@@ -73,6 +118,10 @@
   window.GamesFirebase = {
     isReady: Boolean(db),
     getDb: () => db,
+    getGames: () => [...SUPPORTED_GAMES],
+    normalizeGameName,
+    getGameDocRef: gameDocRef,
+    getGameCollectionRef: gameCollectionRef,
     trackEvent,
   };
 })();

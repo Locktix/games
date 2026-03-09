@@ -1,22 +1,45 @@
 const screens = {
+  mode: document.getElementById("mode-screen"),
   setup: document.getElementById("setup-screen"),
   game: document.getElementById("game-screen"),
 };
+const modeSoloButton = document.getElementById("mode-solo-btn");
+const modeMultiButton = document.getElementById("mode-multi-btn");
+const backModeButton = document.getElementById("back-mode-btn");
 const playersList = document.getElementById("players-list");
+const soloPlayersPanel = document.getElementById("solo-players-panel");
 const addPlayerButton = document.getElementById("add-player-btn");
 const startGameButton = document.getElementById("start-game-btn");
 const setupStatus = document.getElementById("setup-status");
+const setupKicker = document.getElementById("setup-kicker");
+const setupSubtitle = document.getElementById("setup-subtitle");
 const difficultyGrid = document.getElementById("difficulty-grid");
 const difficultyButtons = Array.from(document.querySelectorAll(".difficulty-btn"));
+const multiPanel = document.getElementById("multi-panel");
+const multiNameInput = document.getElementById("multi-name-input");
+const roomCodeInput = document.getElementById("room-code-input");
+const createRoomButton = document.getElementById("create-room-btn");
+const joinRoomButton = document.getElementById("join-room-btn");
+const startMultiButton = document.getElementById("start-multi-btn");
+const roomInfo = document.getElementById("room-info");
+const roomPlayers = document.getElementById("room-players");
+const multiRoleBadge = document.getElementById("multi-role-badge");
 const playerRowTemplate = document.getElementById("player-row-template");
 const currentPlayerLabel = document.getElementById("current-player");
 const currentDifficultyLabel = document.getElementById("current-difficulty");
+const gameRoomMeta = document.getElementById("game-room-meta");
+const gameMultiHint = document.getElementById("game-multi-hint");
 const cardTypeLabel = document.getElementById("card-type");
 const cardTextLabel = document.getElementById("card-text");
 const truthButton = document.getElementById("truth-btn");
 const dareButton = document.getElementById("dare-btn");
-const nextPlayerButton = document.getElementById("next-player-btn");
-const backSetupButton = document.getElementById("back-setup-btn");
+const turnActions = document.getElementById("turn-actions");
+const redrawButton = document.getElementById("redraw-btn");
+const completeTurnButton = document.getElementById("complete-turn-btn");
+const endVoteWrap = document.getElementById("end-vote-wrap");
+const voteEndButton = document.getElementById("vote-end-btn");
+const voteStatus = document.getElementById("vote-status");
+const firebaseDb = window.GamesFirebase?.getDb?.() || null;
 const trackGameEvent = (eventType, payload = {}) => {
   window.GamesFirebase?.trackEvent?.("ActionVerite", eventType, payload);
 };
@@ -777,16 +800,63 @@ function extendDeckWithGeneratedPrompts() {
   });
 }
 extendDeckWithGeneratedPrompts();
+const FIELD_VALUE = window.firebase?.firestore?.FieldValue;
+const CLIENT_ID_KEY = "actionVeriteClientId";
+const MAIN_PAGE_URL = "../index.html";
+
 const state = {
+  gameMode: null,
   players: [],
+  playersDetailed: [],
   currentIndex: 0,
   difficulty: "bebe-cadum",
+  roomMode: "waiting",
+  turn: {
+    cardType: null,
+    cardText: "",
+  },
+  finishRedirectTimer: null,
+  endVotes: [],
+  multiplayer: {
+    clientId: getOrCreateClientId(),
+    playerName: "",
+    roomCode: "",
+    isHost: false,
+    unsubscribe: null,
+  },
 };
+
+function getOrCreateClientId() {
+  const existing = window.localStorage.getItem(CLIENT_ID_KEY);
+  if (existing) {
+    return existing;
+  }
+  const nextId = `client_${Math.random().toString(36).slice(2, 10)}`;
+  window.localStorage.setItem(CLIENT_ID_KEY, nextId);
+  return nextId;
+}
+
+function getRoomsCollection() {
+  if (!firebaseDb) {
+    return null;
+  }
+  return firebaseDb.collection("ActionVerite").doc("multiplayer").collection("rooms");
+}
+
+function getRoomRef(roomCode) {
+  const rooms = getRoomsCollection();
+  if (!rooms || !roomCode) {
+    return null;
+  }
+  return rooms.doc(roomCode);
+}
+
 function setScreen(screenName) {
   Object.entries(screens).forEach(([key, node]) => {
-    node.classList.toggle("active", key === screenName);
+    node?.classList.toggle("active", key === screenName);
   });
 }
+
 function createPlayerRow(defaultValue = "") {
   const node = playerRowTemplate.content.firstElementChild.cloneNode(true);
   const input = node.querySelector(".player-input");
@@ -798,6 +868,7 @@ function createPlayerRow(defaultValue = "") {
   });
   return node;
 }
+
 function collectPlayers() {
   const inputs = Array.from(playersList.querySelectorAll(".player-input"));
   const names = inputs
@@ -812,41 +883,716 @@ function collectPlayers() {
   }
   return { valid: true, names };
 }
+
+function collectMultiName() {
+  const playerName = (multiNameInput?.value || "").trim();
+  if (!playerName) {
+    return { valid: false, message: "Entre ton pseudo pour jouer en multi." };
+  }
+  return { valid: true, name: playerName.slice(0, 24) };
+}
+
 function pickRandomFrom(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
-function drawCard(type) {
-  const pool = DECK[state.difficulty][type];
-  const text = pickRandomFrom(pool);
-  cardTypeLabel.textContent = type === "truth" ? "VÉRITÉ" : "ACTION";
-  cardTextLabel.textContent = text;
+
+function updateDifficultyUI() {
+  difficultyButtons.forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.difficulty === state.difficulty);
+  });
 }
+
+function setCardDisplay(cardType = null, cardText = "") {
+  state.turn.cardType = cardType;
+  state.turn.cardText = cardText;
+
+  if (!cardType || !cardText) {
+    cardTypeLabel.textContent = "ACTION / VÉRITÉ";
+    cardTextLabel.textContent = "Choisis Action ou Vérité pour afficher une carte.";
+    return;
+  }
+
+  cardTypeLabel.textContent = cardType === "truth" ? "VÉRITÉ" : "ACTION";
+  cardTextLabel.textContent = cardText;
+}
+
+function currentTurnPlayer() {
+  return state.playersDetailed[state.currentIndex] || null;
+}
+
+function isMyTurn() {
+  if (state.gameMode !== "multi") {
+    return true;
+  }
+  const currentPlayer = currentTurnPlayer();
+  return Boolean(currentPlayer && currentPlayer.id === state.multiplayer.clientId);
+}
+
+function updateCompleteButtonLabel() {
+  if (state.turn.cardType === "truth") {
+    completeTurnButton.textContent = "Vérité dite";
+    return;
+  }
+  completeTurnButton.textContent = "Action faite";
+}
+
+function clearFinishRedirect() {
+  if (state.finishRedirectTimer) {
+    window.clearTimeout(state.finishRedirectTimer);
+    state.finishRedirectTimer = null;
+  }
+}
+
+function scheduleReturnToMainPage() {
+  if (state.finishRedirectTimer) {
+    return;
+  }
+
+  state.finishRedirectTimer = window.setTimeout(() => {
+    window.location.href = MAIN_PAGE_URL;
+  }, 2200);
+}
+
+function requiredEndVotesCount() {
+  if (!state.players.length) {
+    return 0;
+  }
+  return Math.ceil(state.players.length * 0.75);
+}
+
+function hasCurrentClientVotedEnd() {
+  return state.endVotes.includes(state.multiplayer.clientId);
+}
+
+function updateEndVoteUI() {
+  const isMulti = state.gameMode === "multi";
+  const canShow = isMulti && (state.roomMode === "playing" || state.roomMode === "ended");
+  endVoteWrap.classList.toggle("is-hidden", !canShow);
+
+  if (!canShow) {
+    return;
+  }
+
+  const required = requiredEndVotesCount();
+  voteStatus.textContent = `Votes fin: ${state.endVotes.length}/${required}`;
+
+  if (state.roomMode === "ended") {
+    voteEndButton.disabled = true;
+    voteEndButton.textContent = "Partie terminée";
+    return;
+  }
+
+  const alreadyVoted = hasCurrentClientVotedEnd();
+  voteEndButton.disabled = alreadyVoted;
+  voteEndButton.textContent = alreadyVoted ? "Vote envoyé" : "Voter pour finir";
+}
+
+function applySetupModeUI() {
+  const isSolo = state.gameMode === "solo";
+  const isMulti = state.gameMode === "multi";
+  soloPlayersPanel.classList.toggle("is-hidden", !isSolo);
+  multiPanel.classList.toggle("is-hidden", !isMulti);
+  startGameButton.classList.toggle("is-hidden", !isSolo);
+
+  setupKicker.textContent = isMulti ? "Mode multijoueur" : "Mode local";
+  setupSubtitle.textContent = isMulti
+    ? "Crée un salon ou rejoins un code depuis un autre téléphone."
+    : "Version solo locale sur un seul téléphone.";
+}
+
 function updateGameHeader() {
   currentPlayerLabel.textContent = state.players[state.currentIndex] || "Player";
-  currentDifficultyLabel.textContent = DIFFICULTY_LABELS[state.difficulty];
+  currentDifficultyLabel.textContent = DIFFICULTY_LABELS[state.difficulty] || "Normal";
 }
-function goToNextPlayer() {
+
+function updateGameModeUI() {
+  const isMulti = state.gameMode === "multi";
+  gameRoomMeta.classList.toggle("is-hidden", !isMulti);
+  if (isMulti) {
+    gameRoomMeta.textContent = `Salon: ${state.multiplayer.roomCode || "—"}`;
+  }
+}
+
+function updateTurnControls() {
+  if (state.roomMode === "ended") {
+    setCardDisplay(null, "");
+    gameMultiHint.textContent = "Partie terminée par vote. Retour à l’accueil...";
+    gameMultiHint.classList.toggle("is-hidden", false);
+    truthButton.classList.add("is-hidden");
+    dareButton.classList.add("is-hidden");
+    truthButton.disabled = true;
+    dareButton.disabled = true;
+    turnActions.classList.add("is-hidden");
+    redrawButton.disabled = true;
+    completeTurnButton.disabled = true;
+    updateEndVoteUI();
+    scheduleReturnToMainPage();
+    return;
+  }
+
+  clearFinishRedirect();
+
+  const myTurn = isMyTurn();
+  const hasCard = Boolean(state.turn.cardType && state.turn.cardText);
+
+  if (myTurn) {
+    gameMultiHint.textContent = hasCard
+      ? "Valide ton tour ou repioche la carte."
+      : "À ton tour : choisis Action ou Vérité.";
+  } else {
+    const playerName = state.players[state.currentIndex] || "un joueur";
+    gameMultiHint.textContent = `En attente de ${playerName}.`;
+  }
+
+  gameMultiHint.classList.toggle("is-hidden", false);
+
+  truthButton.classList.toggle("is-hidden", hasCard || !myTurn);
+  dareButton.classList.toggle("is-hidden", hasCard || !myTurn);
+  truthButton.disabled = hasCard || !myTurn;
+  dareButton.disabled = hasCard || !myTurn;
+
+  turnActions.classList.toggle("is-hidden", !hasCard || !myTurn);
+  redrawButton.disabled = !hasCard || !myTurn;
+  completeTurnButton.disabled = !hasCard || !myTurn;
+
+  updateCompleteButtonLabel();
+  updateEndVoteUI();
+}
+
+function refreshRoomLobbyUI(data = null) {
+  if (state.gameMode !== "multi") {
+    return;
+  }
+
+  const players = Array.isArray(data?.players) ? data.players : [];
+  const playerNames = players.map((player) => player?.name).filter(Boolean);
+  roomPlayers.textContent = `Joueurs: ${playerNames.length ? playerNames.join(", ") : "—"}`;
+
+  const code = data?.roomCode || state.multiplayer.roomCode || "—";
+  roomInfo.textContent = data
+    ? `Salon ${code} • ${data.mode === "playing" ? "En cours" : "En attente"}`
+    : `Salon ${code}`;
+
+  const isHost = Boolean(data && data.hostId === state.multiplayer.clientId);
+  state.multiplayer.isHost = isHost;
+  multiRoleBadge.textContent = isHost ? "Hôte" : "Invité";
+
+  const playersCount = players.length;
+  const canStart = Boolean(isHost && data && data.mode !== "playing" && playersCount >= 2);
+  startMultiButton.classList.toggle("is-hidden", !canStart);
+}
+
+function generateRoomCode() {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
+  for (let index = 0; index < 6; index += 1) {
+    code += alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+  return code;
+}
+
+async function reserveRoomCode() {
+  const rooms = getRoomsCollection();
+  if (!rooms) {
+    throw new Error("Firebase indisponible pour le mode multi.");
+  }
+
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const code = generateRoomCode();
+    const existing = await rooms.doc(code).get();
+    if (!existing.exists) {
+      return code;
+    }
+  }
+
+  throw new Error("Impossible de générer un code salon, réessaie.");
+}
+
+function applyMultiplayerDoc(data) {
+  const players = Array.isArray(data?.players) ? data.players : [];
+  state.playersDetailed = players.map((player) => ({
+    id: player?.id || "",
+    name: player?.name || "Joueur",
+  }));
+  state.players = players.map((player) => player?.name).filter(Boolean);
+  state.currentIndex = Number.isFinite(data?.currentIndex)
+    ? Math.max(0, Math.min(data.currentIndex, Math.max(state.players.length - 1, 0)))
+    : 0;
+  state.roomMode = data?.mode || "waiting";
+  state.endVotes = Array.isArray(data?.endVotes)
+    ? data.endVotes.filter((value) => typeof value === "string")
+    : [];
+  if (data?.difficulty && DECK[data.difficulty]) {
+    state.difficulty = data.difficulty;
+    updateDifficultyUI();
+  }
+
+  updateGameHeader();
+  refreshRoomLobbyUI(data);
+  setCardDisplay(data?.currentCardType || null, data?.currentCardText || "");
+  updateGameModeUI();
+  updateTurnControls();
+
+  if (state.roomMode === "playing") {
+    setScreen("game");
+    return;
+  }
+
+  if (state.roomMode === "ended") {
+    setScreen("game");
+    return;
+  }
+
+  if (state.gameMode === "multi") {
+    setScreen("setup");
+  }
+}
+
+function stopRoomSubscription() {
+  if (typeof state.multiplayer.unsubscribe === "function") {
+    state.multiplayer.unsubscribe();
+  }
+  state.multiplayer.unsubscribe = null;
+}
+
+function subscribeToRoom(roomCode) {
+  const roomRef = getRoomRef(roomCode);
+  if (!roomRef) {
+    return;
+  }
+
+  stopRoomSubscription();
+  state.multiplayer.unsubscribe = roomRef.onSnapshot(
+    (snapshot) => {
+      if (!snapshot.exists) {
+        setupStatus.textContent = "Le salon a été supprimé.";
+        stopRoomSubscription();
+        state.multiplayer.roomCode = "";
+        refreshRoomLobbyUI();
+        return;
+      }
+
+      const data = snapshot.data() || {};
+      state.multiplayer.roomCode = data.roomCode || roomCode;
+      applyMultiplayerDoc(data);
+    },
+    (error) => {
+      setupStatus.textContent = `Erreur salon: ${error?.message || error}`;
+    }
+  );
+}
+
+async function createRoom() {
+  if (!firebaseDb) {
+    setupStatus.textContent = "Firebase indisponible pour le mode multi.";
+    return;
+  }
+
+  const playerResult = collectMultiName();
+  if (!playerResult.valid) {
+    setupStatus.textContent = playerResult.message;
+    return;
+  }
+
+  const roomCode = await reserveRoomCode();
+  const roomRef = getRoomRef(roomCode);
+  if (!roomRef) {
+    setupStatus.textContent = "Impossible de créer le salon.";
+    return;
+  }
+
+  const createdAt = FIELD_VALUE?.serverTimestamp ? FIELD_VALUE.serverTimestamp() : new Date().toISOString();
+  const payload = {
+    roomCode,
+    mode: "waiting",
+    difficulty: state.difficulty,
+    hostId: state.multiplayer.clientId,
+    hostName: playerResult.name,
+    players: [{ id: state.multiplayer.clientId, name: playerResult.name }],
+    currentIndex: 0,
+    currentCardType: null,
+    currentCardText: "",
+    createdAt,
+    updatedAt: createdAt,
+  };
+
+  await roomRef.set(payload, { merge: true });
+
+  state.multiplayer.playerName = playerResult.name;
+  state.multiplayer.roomCode = roomCode;
+  state.multiplayer.isHost = true;
+  roomCodeInput.value = roomCode;
+  setupStatus.textContent = `Salon créé: ${roomCode}`;
+  subscribeToRoom(roomCode);
+
+  trackGameEvent("multi_room_created", {
+    roomCode,
+    difficulty: state.difficulty,
+  });
+}
+
+async function joinRoom() {
+  if (!firebaseDb) {
+    setupStatus.textContent = "Firebase indisponible pour le mode multi.";
+    return;
+  }
+
+  const playerResult = collectMultiName();
+  if (!playerResult.valid) {
+    setupStatus.textContent = playerResult.message;
+    return;
+  }
+
+  const roomCode = (roomCodeInput?.value || "").trim().toUpperCase();
+  if (!roomCode || roomCode.length < 4) {
+    setupStatus.textContent = "Entre un code salon valide.";
+    return;
+  }
+
+  const roomRef = getRoomRef(roomCode);
+  if (!roomRef) {
+    setupStatus.textContent = "Impossible de rejoindre ce salon.";
+    return;
+  }
+
+  await firebaseDb.runTransaction(async (transaction) => {
+    const snapshot = await transaction.get(roomRef);
+    if (!snapshot.exists) {
+      throw new Error("Salon introuvable.");
+    }
+
+    const data = snapshot.data() || {};
+    const players = Array.isArray(data.players) ? [...data.players] : [];
+    const existingIndex = players.findIndex((player) => player?.id === state.multiplayer.clientId);
+
+    if (data.mode === "playing" && existingIndex < 0) {
+      throw new Error("Partie en cours: impossible de rejoindre maintenant.");
+    }
+
+    if (existingIndex >= 0) {
+      players[existingIndex] = { ...players[existingIndex], name: playerResult.name };
+    } else {
+      players.push({ id: state.multiplayer.clientId, name: playerResult.name });
+    }
+
+    transaction.set(
+      roomRef,
+      {
+        players,
+        updatedAt: FIELD_VALUE?.serverTimestamp ? FIELD_VALUE.serverTimestamp() : new Date().toISOString(),
+      },
+      { merge: true }
+    );
+  });
+
+  state.multiplayer.playerName = playerResult.name;
+  state.multiplayer.roomCode = roomCode;
+  setupStatus.textContent = `Connecté au salon ${roomCode}.`;
+  subscribeToRoom(roomCode);
+
+  trackGameEvent("multi_room_joined", {
+    roomCode,
+  });
+}
+
+async function startMultiplayerGame() {
+  if (!state.multiplayer.roomCode || !state.multiplayer.isHost) {
+    setupStatus.textContent = "Seul l’hôte peut lancer la partie.";
+    return;
+  }
+
+  const roomRef = getRoomRef(state.multiplayer.roomCode);
+  if (!roomRef) {
+    return;
+  }
+
+  await roomRef.set(
+    {
+      mode: "playing",
+      currentIndex: 0,
+      difficulty: state.difficulty,
+      currentCardType: null,
+      currentCardText: "",
+      endVotes: [],
+      updatedAt: FIELD_VALUE?.serverTimestamp ? FIELD_VALUE.serverTimestamp() : new Date().toISOString(),
+    },
+    { merge: true }
+  );
+
+  trackGameEvent("multi_game_started", {
+    roomCode: state.multiplayer.roomCode,
+    difficulty: state.difficulty,
+  });
+}
+
+async function leaveRoom() {
+  if (!state.multiplayer.roomCode || !firebaseDb) {
+    stopRoomSubscription();
+    return;
+  }
+
+  const roomRef = getRoomRef(state.multiplayer.roomCode);
+  stopRoomSubscription();
+
+  if (!roomRef) {
+    state.multiplayer.roomCode = "";
+    return;
+  }
+
+  try {
+    await firebaseDb.runTransaction(async (transaction) => {
+      const snapshot = await transaction.get(roomRef);
+      if (!snapshot.exists) {
+        return;
+      }
+
+      const data = snapshot.data() || {};
+      const players = Array.isArray(data.players) ? [...data.players] : [];
+      const nextPlayers = players.filter((player) => player?.id !== state.multiplayer.clientId);
+      const nextPlayerIds = nextPlayers.map((player) => player?.id).filter(Boolean);
+      const votes = Array.isArray(data.endVotes) ? data.endVotes : [];
+      const nextVotes = votes.filter((playerId) => nextPlayerIds.includes(playerId));
+      const wasHost = data.hostId === state.multiplayer.clientId;
+
+      if (!nextPlayers.length) {
+        transaction.delete(roomRef);
+        return;
+      }
+
+      const nextHost = wasHost ? nextPlayers[0]?.id : data.hostId;
+      const nextHostName = nextPlayers.find((player) => player.id === nextHost)?.name || data.hostName;
+      const safeIndex = Math.min(Number(data.currentIndex) || 0, Math.max(nextPlayers.length - 1, 0));
+      const requiredVotes = Math.ceil(nextPlayers.length * 0.75);
+      const endByVote = nextPlayers.length > 0 && nextVotes.length >= requiredVotes;
+
+      transaction.set(
+        roomRef,
+        {
+          players: nextPlayers,
+          hostId: nextHost,
+          hostName: nextHostName,
+          currentIndex: safeIndex,
+          mode: data.mode === "playing" && nextPlayers.length < 2 ? "waiting" : endByVote ? "ended" : data.mode,
+          currentCardType:
+            data.mode === "playing" && (nextPlayers.length < 2 || endByVote)
+              ? null
+              : data.currentCardType || null,
+          currentCardText:
+            data.mode === "playing" && (nextPlayers.length < 2 || endByVote)
+              ? ""
+              : data.currentCardText || "",
+          endVotes: nextVotes,
+          updatedAt: FIELD_VALUE?.serverTimestamp ? FIELD_VALUE.serverTimestamp() : new Date().toISOString(),
+        },
+        { merge: true }
+      );
+    });
+  } catch (error) {
+    console.warn("[ActionVerite] leaveRoom error:", error?.message || error);
+  }
+
+  state.multiplayer.roomCode = "";
+  state.multiplayer.isHost = false;
+  state.playersDetailed = [];
+  state.players = [];
+  state.currentIndex = 0;
+  state.roomMode = "waiting";
+  state.endVotes = [];
+  setCardDisplay(null, "");
+  refreshRoomLobbyUI();
+}
+
+async function drawCard(type) {
+  if (!type || !DECK[state.difficulty]?.[type]) {
+    return;
+  }
+
+  if (!isMyTurn()) {
+    return;
+  }
+
+  if (state.gameMode === "multi") {
+    if (!state.multiplayer.roomCode || state.roomMode !== "playing") {
+      return;
+    }
+
+    const pool = DECK[state.difficulty][type];
+    const text = pickRandomFrom(pool);
+    const roomRef = getRoomRef(state.multiplayer.roomCode);
+    await roomRef?.set(
+      {
+        currentCardType: type,
+        currentCardText: text,
+        updatedAt: FIELD_VALUE?.serverTimestamp ? FIELD_VALUE.serverTimestamp() : new Date().toISOString(),
+      },
+      { merge: true }
+    );
+    return;
+  }
+
+  const pool = DECK[state.difficulty][type];
+  const text = pickRandomFrom(pool);
+  setCardDisplay(type, text);
+  updateTurnControls();
+}
+
+async function redrawCurrentCard() {
+  if (!state.turn.cardType || !isMyTurn()) {
+    return;
+  }
+  await drawCard(state.turn.cardType);
+}
+
+async function completeTurn() {
+  if (!state.turn.cardType || !isMyTurn()) {
+    return;
+  }
+
+  if (state.gameMode === "multi") {
+    if (!state.multiplayer.roomCode || state.roomMode !== "playing") {
+      return;
+    }
+
+    const roomRef = getRoomRef(state.multiplayer.roomCode);
+    const nextIndex = state.players.length ? (state.currentIndex + 1) % state.players.length : 0;
+    await roomRef?.set(
+      {
+        currentIndex: nextIndex,
+        currentCardType: null,
+        currentCardText: "",
+        updatedAt: FIELD_VALUE?.serverTimestamp ? FIELD_VALUE.serverTimestamp() : new Date().toISOString(),
+      },
+      { merge: true }
+    );
+    return;
+  }
+
   state.currentIndex = (state.currentIndex + 1) % state.players.length;
   updateGameHeader();
-  cardTypeLabel.textContent = "ACTION / VÉRITÉ";
-  cardTextLabel.textContent = "Choisis une carte pour continuer.";
+  setCardDisplay(null, "");
+  updateTurnControls();
 }
+
+async function voteToEndGame() {
+  if (state.gameMode !== "multi" || !state.multiplayer.roomCode) {
+    return;
+  }
+
+  const roomRef = getRoomRef(state.multiplayer.roomCode);
+  if (!roomRef) {
+    return;
+  }
+
+  await firebaseDb.runTransaction(async (transaction) => {
+    const snapshot = await transaction.get(roomRef);
+    if (!snapshot.exists) {
+      throw new Error("Salon introuvable.");
+    }
+
+    const data = snapshot.data() || {};
+    if (data.mode !== "playing") {
+      return;
+    }
+
+    const players = Array.isArray(data.players) ? data.players : [];
+    const playerIds = players.map((player) => player?.id).filter(Boolean);
+    if (!playerIds.includes(state.multiplayer.clientId)) {
+      throw new Error("Tu n'es plus dans cette partie.");
+    }
+
+    const votes = Array.isArray(data.endVotes) ? [...data.endVotes] : [];
+    if (!votes.includes(state.multiplayer.clientId)) {
+      votes.push(state.multiplayer.clientId);
+    }
+
+    const requiredVotes = Math.ceil(playerIds.length * 0.75);
+    const shouldEnd = votes.length >= requiredVotes;
+
+    transaction.set(
+      roomRef,
+      {
+        endVotes: votes,
+        mode: shouldEnd ? "ended" : data.mode,
+        currentCardType: shouldEnd ? null : data.currentCardType || null,
+        currentCardText: shouldEnd ? "" : data.currentCardText || "",
+        endedAt: shouldEnd
+          ? FIELD_VALUE?.serverTimestamp
+            ? FIELD_VALUE.serverTimestamp()
+            : new Date().toISOString()
+          : data.endedAt || null,
+        updatedAt: FIELD_VALUE?.serverTimestamp ? FIELD_VALUE.serverTimestamp() : new Date().toISOString(),
+      },
+      { merge: true }
+    );
+  });
+}
+
+modeSoloButton.addEventListener("click", () => {
+  state.gameMode = "solo";
+  applySetupModeUI();
+  setupStatus.textContent = "";
+  setScreen("setup");
+  setCardDisplay(null, "");
+  updateGameModeUI();
+  updateTurnControls();
+});
+
+modeMultiButton.addEventListener("click", () => {
+  state.gameMode = "multi";
+  applySetupModeUI();
+  setupStatus.textContent = firebaseDb ? "Crée un salon ou rejoins un code existant." : "Firebase requis pour le mode multi.";
+  setScreen("setup");
+  setCardDisplay(null, "");
+  updateGameModeUI();
+  updateTurnControls();
+});
+
+backModeButton.addEventListener("click", async () => {
+  if (state.gameMode === "multi") {
+    await leaveRoom();
+  }
+  state.gameMode = null;
+  setScreen("mode");
+  setupStatus.textContent = "";
+});
+
 addPlayerButton.addEventListener("click", () => {
   playersList.appendChild(createPlayerRow());
   setupStatus.textContent = "";
   const inputs = playersList.querySelectorAll(".player-input");
   inputs[inputs.length - 1]?.focus();
 });
+
 difficultyGrid.addEventListener("click", (event) => {
   const target = event.target.closest(".difficulty-btn");
   if (!target) return;
   const difficulty = target.dataset.difficulty;
   if (!difficulty || !DECK[difficulty]) return;
+
+  if (state.gameMode === "multi" && !state.multiplayer.isHost && state.multiplayer.roomCode && state.roomMode !== "playing") {
+    setupStatus.textContent = "Seul l’hôte peut changer la difficulté.";
+    return;
+  }
+
   state.difficulty = difficulty;
-  difficultyButtons.forEach((button) => {
-    button.classList.toggle("is-active", button === target);
-  });
+  updateDifficultyUI();
+
+  if (state.gameMode === "multi" && state.multiplayer.isHost && state.multiplayer.roomCode) {
+    const roomRef = getRoomRef(state.multiplayer.roomCode);
+    roomRef
+      ?.set(
+        {
+          difficulty,
+          updatedAt: FIELD_VALUE?.serverTimestamp ? FIELD_VALUE.serverTimestamp() : new Date().toISOString(),
+        },
+        { merge: true }
+      )
+      .catch((error) => {
+        setupStatus.textContent = `Erreur difficulté: ${error?.message || error}`;
+      });
+  }
 });
+
 startGameButton.addEventListener("click", () => {
   const playersResult = collectPlayers();
   if (!playersResult.valid) {
@@ -857,41 +1603,130 @@ startGameButton.addEventListener("click", () => {
     });
     return;
   }
+
   state.players = playersResult.names;
+  state.playersDetailed = playersResult.names.map((name, index) => ({ id: `local_${index}`, name }));
   state.currentIndex = 0;
   setupStatus.textContent = "";
   setScreen("game");
   updateGameHeader();
-  cardTypeLabel.textContent = "ACTION / VÉRITÉ";
-  cardTextLabel.textContent = "Choisis une carte pour démarrer le tour.";
+  setCardDisplay(null, "");
+  updateGameModeUI();
+  updateTurnControls();
+
   trackGameEvent("game_started", {
+    mode: "solo",
     difficulty: state.difficulty,
     playersCount: state.players.length,
   });
 });
+
+createRoomButton.addEventListener("click", () => {
+  createRoom().catch((error) => {
+    setupStatus.textContent = error?.message || "Erreur création salon.";
+  });
+});
+
+joinRoomButton.addEventListener("click", () => {
+  joinRoom().catch((error) => {
+    setupStatus.textContent = error?.message || "Erreur connexion salon.";
+  });
+});
+
+startMultiButton.addEventListener("click", () => {
+  startMultiplayerGame().catch((error) => {
+    setupStatus.textContent = error?.message || "Erreur lancement multi.";
+  });
+});
+
 truthButton.addEventListener("click", () => {
-  drawCard("truth");
-  trackGameEvent("card_drawn", {
-    cardType: "truth",
-    difficulty: state.difficulty,
-  });
+  drawCard("truth")
+    .then(() => {
+      trackGameEvent("card_drawn", {
+        mode: state.gameMode || "unknown",
+        cardType: "truth",
+        difficulty: state.difficulty,
+        roomCode: state.multiplayer.roomCode || null,
+      });
+    })
+    .catch((error) => {
+      setupStatus.textContent = `Erreur carte: ${error?.message || error}`;
+    });
 });
+
 dareButton.addEventListener("click", () => {
-  drawCard("dare");
-  trackGameEvent("card_drawn", {
-    cardType: "dare",
-    difficulty: state.difficulty,
-  });
+  drawCard("dare")
+    .then(() => {
+      trackGameEvent("card_drawn", {
+        mode: state.gameMode || "unknown",
+        cardType: "dare",
+        difficulty: state.difficulty,
+        roomCode: state.multiplayer.roomCode || null,
+      });
+    })
+    .catch((error) => {
+      setupStatus.textContent = `Erreur carte: ${error?.message || error}`;
+    });
 });
-nextPlayerButton.addEventListener("click", goToNextPlayer);
-backSetupButton.addEventListener("click", () => {
-  setScreen("setup");
-  trackGameEvent("back_to_setup", {
-    difficulty: state.difficulty,
-  });
+
+redrawButton.addEventListener("click", () => {
+  redrawCurrentCard()
+    .then(() => {
+      trackGameEvent("card_redrawn", {
+        mode: state.gameMode || "unknown",
+        cardType: state.turn.cardType || "unknown",
+        difficulty: state.difficulty,
+        roomCode: state.multiplayer.roomCode || null,
+      });
+    })
+    .catch((error) => {
+      setupStatus.textContent = `Erreur repioche: ${error?.message || error}`;
+    });
 });
+
+completeTurnButton.addEventListener("click", () => {
+  const finishedCardType = state.turn.cardType || "unknown";
+  completeTurn()
+    .then(() => {
+      trackGameEvent("turn_completed", {
+        mode: state.gameMode || "unknown",
+        cardType: finishedCardType,
+        difficulty: state.difficulty,
+        roomCode: state.multiplayer.roomCode || null,
+      });
+    })
+    .catch((error) => {
+      setupStatus.textContent = `Erreur validation: ${error?.message || error}`;
+    });
+});
+
+voteEndButton.addEventListener("click", () => {
+  voteToEndGame()
+    .then(() => {
+      trackGameEvent("game_end_vote_cast", {
+        mode: state.gameMode || "unknown",
+        roomCode: state.multiplayer.roomCode || null,
+      });
+    })
+    .catch((error) => {
+      setupStatus.textContent = `Erreur vote fin: ${error?.message || error}`;
+    });
+});
+
+window.addEventListener("beforeunload", () => {
+  if (state.gameMode === "multi" && state.multiplayer.roomCode) {
+    leaveRoom();
+  }
+});
+
 playersList.appendChild(createPlayerRow("Joueur 1"));
 playersList.appendChild(createPlayerRow("Joueur 2"));
+applySetupModeUI();
+updateDifficultyUI();
+setCardDisplay(null, "");
+setScreen("mode");
+updateGameModeUI();
+updateTurnControls();
 
 trackGameEvent("game_loaded", {
   difficulty: state.difficulty,

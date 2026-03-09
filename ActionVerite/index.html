@@ -19,14 +19,52 @@
   </head>
   <body>
     <main class="app">
-      <section id="setup-screen" class="screen active">
+      <section id="mode-screen" class="screen active">
         <header class="hero">
-          <p class="kicker">Mode local</p>
+          <p class="kicker">Choix du mode</p>
           <h1>Action Vérité</h1>
-          <p class="subtitle">Version solo (pas de multi pour le moment).</p>
+          <p class="subtitle">Choisis comment tu veux jouer : solo local ou multi sur plusieurs téléphones.</p>
         </header>
 
         <article class="panel">
+          <div class="mode-grid" aria-label="Choisir le mode de jeu">
+            <button id="mode-solo-btn" class="mode-card" type="button">
+              <img
+                src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80"
+                alt="Mode solo"
+                loading="lazy"
+              />
+              <span class="mode-card-content">
+                <span class="mode-card-title">Solo</span>
+                <span class="mode-card-text">1 téléphone, joueurs en local</span>
+              </span>
+            </button>
+            <button id="mode-multi-btn" class="mode-card" type="button">
+              <img
+                src="https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=900&q=80"
+                alt="Mode multi"
+                loading="lazy"
+              />
+              <span class="mode-card-content">
+                <span class="mode-card-title-row">
+                  <span class="mode-card-title">Multi</span>
+                  <span class="beta-tag">BETA</span>
+                </span>
+                <span class="mode-card-text">Plusieurs téléphones synchronisés</span>
+              </span>
+            </button>
+          </div>
+        </article>
+      </section>
+
+      <section id="setup-screen" class="screen">
+        <header class="hero">
+          <p id="setup-kicker" class="kicker">Mode local</p>
+          <h1>Action Vérité</h1>
+          <p id="setup-subtitle" class="subtitle">Version solo.</p>
+        </header>
+
+        <article id="solo-players-panel" class="panel">
           <div class="panel-head">
             <h2>Joueurs</h2>
             <button id="add-player-btn" class="btn btn-ghost" type="button" aria-label="Ajouter un joueur">+ Ajouter</button>
@@ -45,7 +83,41 @@
           </div>
         </article>
 
+        <article class="panel">
+          <h2>Déroulement</h2>
+          <ul class="guide-list">
+            <li>Le joueur du tour choisit <strong>Action</strong> ou <strong>Vérité</strong>.</li>
+            <li>Si la carte ne convient pas, il peut <strong>Repiocher</strong>.</li>
+            <li>Il valide avec <strong>Action faite</strong> / <strong>Vérité dite</strong>.</li>
+          </ul>
+        </article>
+
+        <article id="multi-panel" class="panel is-hidden">
+          <div class="panel-head">
+            <h2>Salon multijoueur</h2>
+            <span id="multi-role-badge" class="difficulty-pill">Invité</span>
+          </div>
+
+          <div class="multi-form-grid">
+            <label class="multi-label" for="multi-name-input">Ton pseudo</label>
+            <input id="multi-name-input" class="player-input" type="text" maxlength="24" placeholder="Ex: Alan" />
+
+            <label class="multi-label" for="room-code-input">Code salon</label>
+            <input id="room-code-input" class="player-input code-input" type="text" maxlength="6" placeholder="ABC123" />
+          </div>
+
+          <div class="card-actions">
+            <button id="create-room-btn" class="btn btn-secondary" type="button">Créer salon</button>
+            <button id="join-room-btn" class="btn btn-secondary" type="button">Rejoindre</button>
+          </div>
+
+          <button id="start-multi-btn" class="btn btn-primary is-hidden" type="button">Lancer la partie multi</button>
+          <p id="room-info" class="hint">Aucun salon actif.</p>
+          <p id="room-players" class="hint">Joueurs: —</p>
+        </article>
+
         <button id="start-game-btn" class="btn btn-primary" type="button">Lancer la partie</button>
+        <button id="back-mode-btn" class="btn btn-ghost" type="button">Retour au choix du mode</button>
         <p id="setup-status" class="status" aria-live="polite"></p>
       </section>
 
@@ -54,13 +126,14 @@
           <div>
             <p class="kicker">Tour actuel</p>
             <h2 id="current-player">Player</h2>
+            <p id="game-room-meta" class="hint is-hidden">Salon: —</p>
           </div>
           <span id="current-difficulty" class="difficulty-pill">Normal</span>
         </header>
 
         <article class="panel card-panel">
-          <p id="card-type" class="card-type">ACTION</p>
-          <p id="card-text" class="card-text">Appuie sur une carte pour commencer.</p>
+          <p id="card-type" class="card-type">ACTION / VÉRITÉ</p>
+          <p id="card-text" class="card-text">Choisis Action ou Vérité pour afficher une carte.</p>
         </article>
 
         <div class="card-actions" aria-label="Choix du type de carte">
@@ -68,10 +141,17 @@
           <button id="dare-btn" class="btn btn-secondary" type="button">Action</button>
         </div>
 
-        <div class="game-actions">
-          <button id="next-player-btn" class="btn btn-primary" type="button">Joueur suivant</button>
-          <button id="back-setup-btn" class="btn btn-ghost" type="button">Paramètres</button>
+        <div id="turn-actions" class="game-actions is-hidden">
+          <button id="redraw-btn" class="btn btn-ghost" type="button">Repiocher</button>
+          <button id="complete-turn-btn" class="btn btn-primary" type="button">Action faite</button>
         </div>
+
+        <div id="end-vote-wrap" class="game-actions is-hidden">
+          <button id="vote-end-btn" class="btn btn-ghost" type="button">Voter pour finir</button>
+          <p id="vote-status" class="hint">Votes fin: 0/0</p>
+        </div>
+
+        <p id="game-multi-hint" class="hint">En attente du joueur courant.</p>
       </section>
     </main>
 

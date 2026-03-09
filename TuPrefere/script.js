@@ -338,7 +338,7 @@ function modeStatsRef(modeKey) {
   if (!firebaseDb || !modeKey) {
     return null;
   }
-  return firebaseDb.collection("tuPrefereModeStats").doc(modeKey);
+  return firebaseDb.collection("TuPrefere").doc("stats").collection("modeStarts").doc(modeKey);
 }
 
 function setModeCountUI(modeKey, count) {
@@ -454,7 +454,7 @@ function dilemmaStatsRef(dilemma) {
   if (!firebaseDb || !dilemma?.id) {
     return null;
   }
-  return firebaseDb.collection("tuPrefereDilemmaStats").doc(dilemma.id);
+  return firebaseDb.collection("TuPrefere").doc("stats").collection("dilemmaStats").doc(dilemma.id);
 }
 
 async function loadGlobalStatsForCurrentDilemma() {

@@ -12,6 +12,7 @@ const eventTableBody = document.getElementById("event-table-body");
 const dayTableBody = document.getElementById("day-table-body");
 
 let autoIntervalId = null;
+const FALLBACK_GAME_COLLECTIONS = ["ActionVerite", "Shady", "TestPurete", "TuPrefere", "WhoAmI"];
 
 function setStatus(text) {
   statusText.textContent = text;
@@ -56,21 +57,41 @@ async function loadStats() {
   }
 
   const limit = Math.max(50, Math.min(2000, Number(limitInput.value) || 500));
-  setStatus(`Chargement des ${limit} derniers événements...`);
+  const gameCollections = window.GamesFirebase?.getGames?.() || FALLBACK_GAME_COLLECTIONS;
+  setStatus(`Chargement des événements (${gameCollections.length} jeux)...`);
 
   try {
-    const snapshot = await db
-      .collection("gameEvents")
-      .orderBy("createdAt", "desc")
-      .limit(limit)
-      .get();
+    const snapshots = await Promise.all(
+      gameCollections.map((gameName) =>
+        db.collection(gameName).doc("meta").collection("gameEvents").orderBy("createdAt", "desc").limit(limit).get()
+      )
+    );
+
+    const events = [];
+    snapshots.forEach((snapshot, index) => {
+      const gameName = gameCollections[index];
+      snapshot.forEach((doc) => {
+        const data = doc.data() || {};
+        events.push({
+          ...data,
+          game: data.game || gameName,
+        });
+      });
+    });
+
+    events.sort((a, b) => {
+      const aTime = typeof a.createdAt?.toDate === "function" ? a.createdAt.toDate().getTime() : new Date(a.createdAt || 0).getTime();
+      const bTime = typeof b.createdAt?.toDate === "function" ? b.createdAt.toDate().getTime() : new Date(b.createdAt || 0).getTime();
+      return bTime - aTime;
+    });
+
+    const recentEvents = events.slice(0, limit);
 
     const byGame = new Map();
     const byType = new Map();
     const byDay = new Map();
 
-    snapshot.forEach((doc) => {
-      const data = doc.data() || {};
+    recentEvents.forEach((data) => {
       const game = data.game || "unknown";
       const type = data.eventType || "unknown";
       const day = formatDay(data.createdAt);
@@ -87,7 +108,7 @@ async function loadStats() {
     const typesEntries = [...byType.entries()].sort(sortDesc);
     const dayEntries = [...byDay.entries()].sort(sortDayDesc);
 
-    totalEventsNode.textContent = String(snapshot.size);
+    totalEventsNode.textContent = String(recentEvents.length);
     totalGamesNode.textContent = String(gamesEntries.length);
     totalTypesNode.textContent = String(typesEntries.length);
 
@@ -95,7 +116,7 @@ async function loadStats() {
     renderRows(eventTableBody, typesEntries);
     renderRows(dayTableBody, dayEntries);
 
-    setStatus(`Mise à jour OK (${snapshot.size} événements).`);
+    setStatus(`Mise à jour OK (${recentEvents.length} événements).`);
   } catch (error) {
     console.error(error);
     setStatus(`Erreur de lecture Firestore: ${error?.message || error}`);
