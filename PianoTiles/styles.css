@@ -158,6 +158,53 @@ body {
   pointer-events: none;
 }
 
+.judgement-feedback {
+  position: absolute;
+  left: 50%;
+  bottom: 22%;
+  transform: translate(-50%, 0);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  font-size: clamp(1rem, 2.8vw, 1.4rem);
+  opacity: 0;
+  pointer-events: none;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.32);
+}
+
+.judgement-feedback.show {
+  animation: judgement-pop 320ms ease;
+}
+
+.judgement-perfect {
+  color: #16a34a;
+}
+
+.judgement-good {
+  color: #65a30d;
+}
+
+.judgement-not-good {
+  color: #f59e0b;
+}
+
+.judgement-bad {
+  color: #dc2626;
+}
+
+@keyframes judgement-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 14px) scale(0.9);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -8px) scale(1);
+  }
+}
+
 .overlay {
   position: absolute;
   inset: 0;

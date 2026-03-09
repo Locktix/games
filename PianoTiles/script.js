@@ -14,11 +14,13 @@ const hitLine = document.getElementById("hit-line");
 const scoreValue = document.getElementById("score-value");
 const bestValue = document.getElementById("best-value");
 const speedValue = document.getElementById("speed-value");
+const comboValue = document.getElementById("combo-value");
 const overlay = document.getElementById("overlay");
 const overlayTitle = document.getElementById("overlay-title");
 const overlayText = document.getElementById("overlay-text");
 const startButton = document.getElementById("start-btn");
 const statusNode = document.getElementById("status");
+const judgementFeedback = document.getElementById("judgement-feedback");
 const refreshTopButton = document.getElementById("refresh-top-btn");
 const leaderboardList = document.getElementById("leaderboard-list");
 const playerNameInput = document.getElementById("player-name");
@@ -38,7 +40,44 @@ const state = {
   lastFrameTime: 0,
   startedAt: 0,
   canSaveScore: true,
+  combo: 0,
+  bonusLevel: 0,
 };
+
+const JUDGEMENTS = [
+  {
+    key: "perfect",
+    label: "Perfect",
+    className: "judgement-perfect",
+    maxRatioDistance: 0.035,
+    basePoints: 4,
+    boostsCombo: true,
+  },
+  {
+    key: "good",
+    label: "Good",
+    className: "judgement-good",
+    maxRatioDistance: 0.09,
+    basePoints: 3,
+    boostsCombo: true,
+  },
+  {
+    key: "not_good",
+    label: "Not Good",
+    className: "judgement-not-good",
+    maxRatioDistance: 0.18,
+    basePoints: 2,
+    boostsCombo: false,
+  },
+  {
+    key: "bad",
+    label: "Bad",
+    className: "judgement-bad",
+    maxRatioDistance: Infinity,
+    basePoints: 1,
+    boostsCombo: false,
+  },
+];
 
 function setStatus(text) {
   statusNode.textContent = text;
@@ -95,6 +134,47 @@ function updateHud() {
   bestValue.textContent = String(state.bestScore);
   const speedFactor = state.speed / SPEED_START;
   speedValue.textContent = `${speedFactor.toFixed(2)}x`;
+  comboValue.textContent = String(state.combo);
+}
+
+function showJudgement(judgement, gainedPoints, bonusPoints) {
+  if (!judgementFeedback) {
+    return;
+  }
+
+  const bonusSuffix = bonusPoints > 0 ? ` (+${bonusPoints} bonus)` : "";
+  judgementFeedback.textContent = `${judgement.label} +${gainedPoints}${bonusSuffix}`;
+  judgementFeedback.className = `judgement-feedback ${judgement.className} show`;
+
+  window.clearTimeout(showJudgement.timeoutId);
+  showJudgement.timeoutId = window.setTimeout(() => {
+    judgementFeedback.className = "judgement-feedback";
+  }, 320);
+}
+
+showJudgement.timeoutId = 0;
+
+function evaluateJudgement(tile, lineY, rectHeight) {
+  const tileBottom = tile.y + tile.height;
+  const ratioDistance = Math.abs(tileBottom - lineY) / rectHeight;
+  return JUDGEMENTS.find((judgement) => ratioDistance <= judgement.maxRatioDistance) || JUDGEMENTS[JUDGEMENTS.length - 1];
+}
+
+function pointsFromJudgement(judgement) {
+  if (judgement.boostsCombo) {
+    state.combo += 1;
+    state.bonusLevel = Math.min(6, state.bonusLevel + 1);
+  } else {
+    state.combo = 0;
+    state.bonusLevel = 0;
+  }
+
+  const bonusPoints = judgement.boostsCombo ? Math.floor(state.bonusLevel / 2) : 0;
+  const gainedPoints = judgement.basePoints + bonusPoints;
+  return {
+    gainedPoints,
+    bonusPoints,
+  };
 }
 
 function clearTiles() {
@@ -152,6 +232,8 @@ function startRun() {
   state.lastFrameTime = 0;
   state.startedAt = performance.now();
   state.canSaveScore = true;
+  state.combo = 0;
+  state.bonusLevel = 0;
   clearTiles();
   hideOverlay();
   updateHud();
@@ -206,17 +288,12 @@ function processTap(lane) {
 
   const rect = boardRect();
   const lineY = hitLineY(rect);
-  const toleranceTop = rect.height * 0.12;
-  const toleranceBottom = rect.height * 0.16;
 
   const candidates = state.tiles
     .filter((tile) => tile.lane === lane)
     .sort((left, right) => right.y - left.y);
 
-  const target = candidates.find((tile) => {
-    const tileBottom = tile.y + tile.height;
-    return tileBottom >= lineY - toleranceTop && tile.y <= lineY + toleranceBottom;
-  });
+  const target = candidates[0];
 
   if (!target) {
     finishRun("mauvaise case");
@@ -227,9 +304,18 @@ function processTap(lane) {
   state.tiles = state.tiles.filter((tile) => tile.id !== target.id);
   removeTile(target);
 
-  state.score += 1;
+  const judgement = evaluateJudgement(target, lineY, rect.height);
+  const { gainedPoints, bonusPoints } = pointsFromJudgement(judgement);
+  state.score += gainedPoints;
   adaptDifficulty();
   updateHud();
+  showJudgement(judgement, gainedPoints, bonusPoints);
+
+  trackEvent("tile_hit", {
+    judgement: judgement.key,
+    gainedPoints,
+    combo: state.combo,
+  });
 
   if (state.score % 10 === 0) {
     trackEvent("score_milestone", { score: state.score });
