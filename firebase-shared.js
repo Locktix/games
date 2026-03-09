@@ -38,7 +38,7 @@
 
   let db = null;
   let fieldValue = null;
-  const SUPPORTED_GAMES = ["ActionVerite", "Shady", "TestPurete", "TuPrefere", "WhoAmI"];
+  const SUPPORTED_GAMES = ["ActionVerite", "Shady", "TestPurete", "TuPrefere", "WhoAmI", "PianoTiles"];
 
   function normalizeGameName(game) {
     const raw = typeof game === "string" ? game.trim() : "";
@@ -52,6 +52,7 @@
     if (lower === "testpurete") return "TestPurete";
     if (lower === "tuprefere" || lower === "tupréfère") return "TuPrefere";
     if (lower === "whoami") return "WhoAmI";
+    if (lower === "pianotiles" || lower === "piano tiles") return "PianoTiles";
     return raw;
   }
 

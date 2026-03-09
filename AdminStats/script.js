@@ -12,7 +12,7 @@ const eventTableBody = document.getElementById("event-table-body");
 const dayTableBody = document.getElementById("day-table-body");
 
 let autoIntervalId = null;
-const FALLBACK_GAME_COLLECTIONS = ["ActionVerite", "Shady", "TestPurete", "TuPrefere", "WhoAmI"];
+const FALLBACK_GAME_COLLECTIONS = ["ActionVerite", "Shady", "TestPurete", "TuPrefere", "WhoAmI", "PianoTiles"];
 
 function setStatus(text) {
   statusText.textContent = text;

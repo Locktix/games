@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Piano Tiles — Reflex</title>
+    <meta name="description" content="Tape les tuiles noires, évite les blanches et bats ton meilleur score." />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="hero">
+        <p class="kicker">Nouveau jeu</p>
+        <h1>Piano Tiles</h1>
+        <p class="subtitle">Tape uniquement les tuiles noires avant qu’elles ne passent la ligne rouge.</p>
+      </header>
+
+      <section class="panel topbar">
+        <label class="field" for="player-name">
+          <span>Ton pseudo (optionnel)</span>
+          <input id="player-name" type="text" maxlength="20" placeholder="Ex: Alan" />
+        </label>
+        <div class="stats" aria-live="polite">
+          <p>Score: <strong id="score-value">0</strong></p>
+          <p>Best local: <strong id="best-value">0</strong></p>
+          <p>Vitesse: <strong id="speed-value">1.00x</strong></p>
+        </div>
+      </section>
+
+      <section class="panel game-panel">
+        <div id="board" class="board" aria-label="Plateau Piano Tiles" role="button" tabindex="0">
+          <div class="lane-grid" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
+          </div>
+          <div id="tiles-layer" class="tiles-layer"></div>
+          <div id="hit-line" class="hit-line" aria-hidden="true"></div>
+
+          <div id="overlay" class="overlay">
+            <h2 id="overlay-title">Prêt ?</h2>
+            <p id="overlay-text">Clique sur Démarrer puis tape les colonnes 1-2-3-4 ou directement à l’écran.</p>
+            <button id="start-btn" class="btn btn-primary" type="button">Démarrer</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="leaderboard-head">
+          <h2>Top global (Firebase)</h2>
+          <button id="refresh-top-btn" class="btn btn-ghost" type="button">Rafraîchir</button>
+        </div>
+        <ol id="leaderboard-list" class="leaderboard-list">
+          <li>Aucune donnée pour le moment.</li>
+        </ol>
+        <p id="status" class="status">Prêt.</p>
+      </section>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore-compat.js"></script>
+    <script src="../firebase-shared.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
