@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CheckList de la Vie</title>
+    <meta
+      name="description"
+      content="Coche les étapes de ta vie et suis ta progression personnelle."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="hero">
+        <a class="back-link" href="../">← Retour au hub</a>
+        <h1>CheckList de la Vie</h1>
+        <p>
+          Timeline par âge : de la naissance à l’âge adulte, coche les étapes déjà vécues et suis ta progression.
+        </p>
+      </header>
+
+      <section class="controls" aria-label="Contrôles checklist">
+        <label class="search-wrap" for="searchInput">
+          <span>Rechercher</span>
+          <input
+            id="searchInput"
+            type="search"
+            placeholder="Ex: premiers pas, bac, permis, premier job..."
+            autocomplete="off"
+          />
+        </label>
+
+        <div class="stats" aria-live="polite">
+          <p><strong id="doneCount">0</strong> complétés</p>
+          <p><strong id="totalCount">0</strong> au total</p>
+          <p><strong id="progressPercent">0%</strong> de progression</p>
+        </div>
+
+        <div class="actions">
+          <button id="resetBtn" type="button">Réinitialiser la checklist</button>
+        </div>
+      </section>
+
+      <section class="progress" aria-label="Progression globale">
+        <div class="bar-track">
+          <div id="progressBar" class="bar-fill" style="width: 0%"></div>
+        </div>
+      </section>
+
+      <section id="checklistRoot" class="checklist" aria-label="Checklist de vie"></section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

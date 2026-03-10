@@ -1,0 +1,240 @@
+:root {
+  --bg: #0f1220;
+  --surface: #171b2a;
+  --surface-2: #1d2334;
+  --surface-soft: #232b41;
+  --border: #303b54;
+  --text: #edf1fb;
+  --muted: #adb8d1;
+  --accent: #adc0ff;
+  --accent-2: #7fe2b3;
+  --radius: 18px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background:
+    radial-gradient(1000px 500px at 0% -10%, #2d3a5c 0%, transparent 60%),
+    radial-gradient(900px 500px at 100% -10%, #2c1f45 0%, transparent 62%),
+    var(--bg);
+  color: var(--text);
+}
+
+.app {
+  width: min(100%, 1120px);
+  margin: 0 auto;
+  padding: clamp(1rem, 3vw, 2rem) 1rem 3.2rem;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 0.8rem;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.back-link:hover,
+.back-link:focus-visible {
+  text-decoration: underline;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4.5vw, 3.1rem);
+  letter-spacing: -0.02em;
+}
+
+.hero p {
+  margin: 0.7rem 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+  max-width: 68ch;
+}
+
+.controls {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  background: linear-gradient(165deg, var(--surface), #141b2b 88%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: grid;
+  gap: 1rem;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
+}
+
+.search-wrap {
+  display: grid;
+  gap: 0.45rem;
+  font-weight: 600;
+}
+
+.search-wrap input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text);
+  padding: 0.8rem 0.9rem;
+  font: inherit;
+}
+
+.search-wrap input::placeholder {
+  color: #8b97b4;
+}
+
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1rem;
+}
+
+.stats p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.stats strong {
+  color: var(--accent-2);
+}
+
+.actions button {
+  border: 1px solid #526181;
+  background: #242e45;
+  color: var(--text);
+  border-radius: 10px;
+  padding: 0.62rem 0.95rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.actions button:hover,
+.actions button:focus-visible {
+  background: #313f5f;
+}
+
+.progress {
+  margin: 0.9rem 0 1.2rem;
+}
+
+.bar-track {
+  width: 100%;
+  height: 15px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #1b2232;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #97adff, #74e0b0);
+  transition: width 220ms ease;
+}
+
+.checklist {
+  display: grid;
+  gap: 1.1rem;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.stage-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: linear-gradient(165deg, #171d2b, #111723);
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.3);
+}
+
+.stage-cover {
+  width: 100%;
+  height: 138px;
+  object-fit: cover;
+  display: block;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.stage-body {
+  padding: 0.9rem 0.95rem 1rem;
+}
+
+.stage-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.7rem;
+}
+
+.stage-title {
+  margin: 0;
+  font-size: 1.07rem;
+}
+
+.stage-meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.items li {
+  margin: 0;
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  color: var(--text);
+  padding: 0.38rem 0.45rem;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.item:hover {
+  border-color: rgba(173, 192, 255, 0.35);
+}
+
+.item input {
+  margin-top: 0.15rem;
+  accent-color: #7ee0b2;
+}
+
+.item span {
+  line-height: 1.4;
+}
+
+.item input:checked + span {
+  color: #8f9cb4;
+  text-decoration: line-through;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .checklist {
+    grid-template-columns: 1fr;
+  }
+}
