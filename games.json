@@ -1,0 +1,58 @@
+[
+  {
+    "slug": "Shady",
+    "href": "./Shady/",
+    "badge": "Jeu 01",
+    "title": "Shady",
+    "description": "Un vrai Undercover où chacun tente de démasquer les imposteurs."
+  },
+  {
+    "slug": "WhoAmI",
+    "href": "./WhoAmI/",
+    "badge": "Jeu 02",
+    "title": "WhoAmI",
+    "description": "Un Qui suis-je ? avec des personnalités à découvrir via une série de questions."
+  },
+  {
+    "slug": "ActionVerite",
+    "href": "./ActionVerite/",
+    "badge": "Jeu 03",
+    "title": "Action Vérité",
+    "description": "Version solo locale avec ajout illimité de joueurs, thèmes et difficulté."
+  },
+  {
+    "slug": "TestPurete",
+    "href": "./TestPurete/",
+    "badge": "Jeu 04",
+    "title": "Test de Pureté",
+    "description": "Quiz solo avec score sur 100 et grande banque de questions."
+  },
+  {
+    "slug": "TuPrefere",
+    "href": "./TuPrefere/",
+    "badge": "Jeu 05",
+    "title": "Tu Préfères ?",
+    "description": "Dilemmes psychologiques, conneries et choix impossibles à trancher."
+  },
+  {
+    "slug": "PianoTiles",
+    "href": "./PianoTiles/",
+    "badge": "Jeu 06",
+    "title": "Piano Tiles",
+    "description": "Jeu de réflexes: tape les tuiles noires au bon moment et bats le top global."
+  },
+  {
+    "slug": "CheckListDeLaVie",
+    "href": "./CheckListDeLaVie/",
+    "badge": "Jeu 07",
+    "title": "CheckList de la Vie",
+    "description": "Coche les étapes de vie déjà vécues et suis ta progression en pourcentage."
+  },
+  {
+    "slug": "RPG",
+    "href": "./RPG/index.html",
+    "badge": "Jeu 08",
+    "title": "RPG Beta",
+    "description": "Explore a new world and complete quests!"
+  }
+]

@@ -30,7 +30,8 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="./shared.css" />
+    <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <main class="container">
@@ -40,119 +41,63 @@
         <p class="subtitle">Choisis un jeu et lance-toi en un clic.</p>
       </header>
 
-      <section class="games" aria-label="Liste des jeux">
-        <a
-          class="game-card"
-          href="./Shady/"
-          rel="noopener noreferrer"
-          aria-label="Ouvrir le jeu Shady"
-        >
-          <div class="game-content">
-            <span class="badge">Jeu 01</span>
-            <h2>Shady</h2>
-            <p>Un vrai Undercover où chacun tente de démasquer les imposteurs.</p>
-          </div>
-          <span class="arrow" aria-hidden="true">→</span>
-        </a>
-
-        <a
-          class="game-card"
-          href="./WhoAmI/"
-          rel="noopener noreferrer"
-          aria-label="Ouvrir le jeu WhoAmI"
-        >
-          <div class="game-content">
-            <span class="badge">Jeu 02</span>
-            <h2>WhoAmI</h2>
-            <p>Un Qui suis-je ? avec des personnalités à découvrir via une série de questions.</p>
-          </div>
-          <span class="arrow" aria-hidden="true">→</span>
-        </a>
-
-        <a
-          class="game-card"
-          href="./ActionVerite/"
-          rel="noopener noreferrer"
-          aria-label="Ouvrir le jeu Action Vérité"
-        >
-          <div class="game-content">
-            <span class="badge">Jeu 03</span>
-            <h2>Action Vérité</h2>
-            <p>Version solo locale avec ajout illimité de joueurs, thèmes et difficulté.</p>
-          </div>
-          <span class="arrow" aria-hidden="true">→</span>
-        </a>
-
-        <a
-          class="game-card"
-          href="./TestPurete/"
-          rel="noopener noreferrer"
-          aria-label="Ouvrir le Test de Pureté"
-        >
-          <div class="game-content">
-            <span class="badge">Jeu 04</span>
-            <h2>Test de Pureté</h2>
-            <p>Quiz solo avec score sur 100 et grande banque de questions.</p>
-          </div>
-          <span class="arrow" aria-hidden="true">→</span>
-        </a>
-
-        <a
-          class="game-card"
-          href="./TuPrefere/"
-          rel="noopener noreferrer"
-          aria-label="Ouvrir le jeu Tu Préfères"
-        >
-          <div class="game-content">
-            <span class="badge">Jeu 05</span>
-            <h2>Tu Préfères ?</h2>
-            <p>Dilemmes psychologiques, conneries et choix impossibles à trancher.</p>
-          </div>
-          <span class="arrow" aria-hidden="true">→</span>
-        </a>
-
-        <a
-          class="game-card"
-          href="./PianoTiles/"
-          rel="noopener noreferrer"
-          aria-label="Ouvrir le jeu Piano Tiles"
-        >
-          <div class="game-content">
-            <span class="badge">Jeu 06</span>
-            <h2>Piano Tiles</h2>
-            <p>Jeu de réflexes: tape les tuiles noires au bon moment et bats le top global.</p>
-          </div>
-          <span class="arrow" aria-hidden="true">→</span>
-        </a>
-
-        <a
-          class="game-card"
-          href="./CheckListDeLaVie/"
-          rel="noopener noreferrer"
-          aria-label="Ouvrir le jeu CheckList de la Vie"
-        >
-          <div class="game-content">
-            <span class="badge">Jeu 07</span>
-            <h2>CheckList de la Vie</h2>
-            <p>Coche les étapes de vie déjà vécues et suis ta progression en pourcentage.</p>
-          </div>
-          <span class="arrow" aria-hidden="true">→</span>
-        </a>
-
-        <a
-          class="game-card"
-          href="./RPG/index.html"
-          rel="noopener noreferrer"
-          aria-label="Ouvrir le jeu RPG Beta"
-        >
-          <div class="game-content">
-            <span class="badge">Jeu 08</span>
-            <h2>RPG Beta</h2>
-            <p>Explore a new world and complete quests!</p>
-          </div>
-          <span class="arrow" aria-hidden="true">→</span>
-        </a>
+      <section class="games" id="games-list" aria-label="Liste des jeux" aria-busy="true">
+        <p id="games-status" class="games-status">Chargement des jeux…</p>
       </section>
+
+      <template id="game-card-template">
+        <a class="game-card" rel="noopener noreferrer">
+          <div class="game-content">
+            <span class="badge"></span>
+            <h2></h2>
+            <p></p>
+          </div>
+          <span class="arrow" aria-hidden="true">→</span>
+        </a>
+      </template>
     </main>
+
+    <script>
+      (async function renderGames() {
+        const list = document.getElementById("games-list");
+        const template = document.getElementById("game-card-template");
+        const status = document.getElementById("games-status");
+
+        try {
+          const response = await fetch("./games.json", { cache: "no-cache" });
+          if (!response.ok) {
+            throw new Error("HTTP " + response.status);
+          }
+
+          const games = await response.json();
+          if (!Array.isArray(games) || games.length === 0) {
+            throw new Error("Aucun jeu disponible.");
+          }
+
+          const fragment = document.createDocumentFragment();
+          games.forEach((game) => {
+            const node = template.content.firstElementChild.cloneNode(true);
+            node.href = game.href;
+            node.setAttribute("aria-label", `Ouvrir le jeu ${game.title}`);
+            node.querySelector(".badge").textContent = game.badge;
+            node.querySelector("h2").textContent = game.title;
+            node.querySelector("p").textContent = game.description;
+            fragment.appendChild(node);
+          });
+
+          status?.remove();
+          list.appendChild(fragment);
+          list.setAttribute("aria-busy", "false");
+        } catch (error) {
+          console.error("[GamesHub] Impossible de charger games.json", error);
+          list.setAttribute("aria-busy", "false");
+          if (status) {
+            status.textContent =
+              "Impossible de charger la liste des jeux. Rafraîchis la page.";
+            status.classList.add("is-error");
+          }
+        }
+      })();
+    </script>
   </body>
 </html>

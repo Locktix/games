@@ -62,6 +62,23 @@ h1 {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
+.games-status {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 1.4rem 1.2rem;
+  color: var(--muted);
+  text-align: center;
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+
+.games-status.is-error {
+  color: #ffb4b4;
+  border-color: #6b2c3a;
+  background: #241820;
+}
+
 .game-card {
   display: flex;
   align-items: center;

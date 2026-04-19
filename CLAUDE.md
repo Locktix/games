@@ -40,10 +40,14 @@ Key invariants when adding a new game or event:
 ## Adding a new game (the pattern)
 
 1. Create `<NewGame>/index.html` + `styles.css` + `script.js`.
-2. In `index.html`, load Firebase compat app + firestore scripts **and** `../firebase-shared.js` **before** `script.js`.
+2. In `index.html`, load Firebase compat app + firestore scripts **and** `../firebase-shared.js` **before** `script.js`. Optionally include `../shared.css` for the common reset/helpers (see below).
 3. Register the folder name in `SUPPORTED_GAMES` and `normalizeGameName()` in [firebase-shared.js](firebase-shared.js).
-4. Add a `<a class="game-card" href="./<NewGame>/">` entry in the root [index.html](index.html).
+4. Add a JSON entry to [games.json](games.json) — the root hub renders its cards from this file, no HTML edit required.
 5. Use `window.GamesFirebase.trackEvent("<NewGame>", "event_type", {...})` for analytics; use `GamesFirebase.getGameCollectionRef("<NewGame>", "scores")` for per-game data.
+
+## Shared primitives
+
+[shared.css](shared.css) exposes universally-safe rules: `*, html, body` reset, Inter font-family default, `.is-hidden` / `.visually-hidden` / `.safe-area` helpers, and a `prefers-reduced-motion` guard. It is included by the root [index.html](index.html) and is **opt-in for each game** — games can adopt it incrementally with `<link rel="stylesheet" href="../shared.css" />` before their own `styles.css`. It intentionally does **not** define colors or layout, so each game keeps its own palette.
 
 ## Language / UI convention
 
