@@ -54,5 +54,12 @@
     "badge": "Jeu 08",
     "title": "RPG Beta",
     "description": "Explore a new world and complete quests!"
+  },
+  {
+    "slug": "JeuxDeCartes",
+    "href": "./JeuxDeCartes/",
+    "badge": "Nouveau",
+    "title": "Jeux de Cartes",
+    "description": "Collection de jeux de cartes classiques comme la Bataille (Combattants)."
   }
 ]

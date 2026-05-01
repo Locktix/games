@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Combattants - La Bataille</title>
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cinzel:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../shared.css" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <!-- Menu de départ -->
+      <section id="menu-screen" class="screen active">
+        <header class="hero">
+          <p class="kicker">Jeu de Cartes</p>
+          <h1>Combattants</h1>
+          <p class="subtitle">La célèbre Bataille. Sois le plus fort, remporte tout.</p>
+        </header>
+
+        <div class="panel">
+          <div class="mode-grid">
+            <button class="mode-card" id="start-solo">
+              <div class="mode-card-content">
+                <div class="mode-card-title-row">
+                  <span class="mode-card-title">Solo</span>
+                  <span class="difficulty-pill">Contre Bot</span>
+                </div>
+                <p class="mode-card-text">Affronte l'intelligence artificielle du jeu.</p>
+              </div>
+            </button>
+            <button class="mode-card" disabled style="opacity: 0.5; cursor: not-allowed;">
+              <div class="mode-card-content">
+                <div class="mode-card-title-row">
+                  <span class="mode-card-title">Multijoueur</span>
+                  <span class="beta-tag">Bientôt</span>
+                </div>
+                <p class="mode-card-text">Défie tes amis en ligne (prochainement).</p>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Comment jouer ?</h2>
+          <ul class="guide-list">
+            <li>Chaque joueur reçoit la moitié du paquet.</li>
+            <li>À chaque tour, on retourne la carte du dessus.</li>
+            <li>La carte la plus forte remporte le pli.</li>
+            <li>En cas d'égalité : c'est la <strong>BATAILLE</strong> !</li>
+          </ul>
+        </div>
+        
+        <a href="../index.html" class="btn btn-secondary" style="text-align: center; text-decoration: none;">Retour aux jeux</a>
+      </section>
+
+      <!-- Écran de jeu -->
+      <section id="game-screen" class="screen">
+        <div class="game-header">
+          <button id="quit-game" class="btn-icon">←</button>
+          <div class="game-info">
+            <span class="game-status" id="status-msg">Prêt à combattre ?</span>
+            <div class="timer" id="game-timer">00:00</div>
+          </div>
+          <div class="turn-count">Tour <span id="turn-num">1</span></div>
+        </div>
+
+        <div class="battlefield">
+          <!-- Zone Bot -->
+          <div class="player-zone bot-zone">
+            <div class="deck-info">
+              <span class="name">Le Bot</span>
+              <span class="card-count" id="bot-count">26</span>
+            </div>
+            <div class="card-slot" id="bot-slot">
+              <div class="deck-visual" id="bot-deck"></div>
+            </div>
+          </div>
+
+          <!-- Zone Centrale (Table) -->
+          <div class="table-zone" id="table-zone">
+            <div class="win-overlay" id="win-overlay"></div>
+          </div>
+
+          <!-- Zone Joueur -->
+          <div class="player-zone user-zone">
+            <div class="card-slot" id="user-slot">
+              <div class="deck-visual" id="user-deck"></div>
+            </div>
+            <div class="deck-info">
+              <span class="name">Toi</span>
+              <span class="card-count" id="user-count">26</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="game-controls">
+          <div class="speed-controls">
+            <button class="speed-btn active" data-speed="1">x1</button>
+            <button class="speed-btn" data-speed="2">x2</button>
+            <button class="speed-btn" data-speed="4">x4</button>
+            <button class="speed-btn" data-speed="10">x10</button>
+            <button class="speed-btn" data-speed="20">x20</button>
+            <button class="speed-btn" data-speed="100">x100</button>
+          </div>
+          <button id="draw-btn" class="btn btn-primary">Piocher</button>
+          <button id="auto-btn" class="btn btn-ghost">Auto-play</button>
+        </div>
+      </section>
+
+      <!-- Écran de fin -->
+      <section id="end-screen" class="screen">
+        <div class="panel card-panel result-panel">
+          <h1 id="end-title">Victoire !</h1>
+          <p id="end-msg">Tu as remporté toutes les cartes du royaume.</p>
+          <div class="stats-row">
+            <div class="stat-item">
+              <span class="stat-val" id="stat-turns">-</span>
+              <span class="stat-label">Tours</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-val" id="stat-time">-</span>
+              <span class="stat-label">Temps</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-val" id="stat-battles">-</span>
+              <span class="stat-label">Batailles</span>
+            </div>
+          </div>
+          <div class="game-actions">
+            <button id="restart-btn" class="btn btn-primary">Rejouer</button>
+            <a href="../index.html" class="btn btn-secondary" style="text-align: center; text-decoration: none;">Quitter</a>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="../../firebase-shared.js"></script>
+    <script src="./script.js"></script>
+  </body>
+</html>

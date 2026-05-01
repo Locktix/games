@@ -1,0 +1,16 @@
+[
+  {
+    "slug": "combattants",
+    "href": "./combattants/",
+    "badge": "Classique",
+    "title": "Combattants",
+    "description": "La célèbre Bataille revisitée avec élégance. Remporte toutes les cartes !"
+  },
+  {
+    "slug": "uno",
+    "href": "#",
+    "badge": "Bientôt",
+    "title": "Uno",
+    "description": "Débarrasse-toi de tes cartes le premier. Préparez-vous à piocher !"
+  }
+]
