@@ -4,59 +4,86 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CheckList de la Vie</title>
-    <meta
-      name="description"
-      content="Coche les étapes de ta vie et suis ta progression personnelle."
-    />
+    <meta name="description" content="Coche les étapes de ta vie et suis ta progression personnelle." />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../shared.css" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <div class="noise" aria-hidden="true"></div>
+
     <main class="app">
-      <header class="hero">
-        <a class="back-link" href="../">← Retour au hub</a>
-        <h1>CheckList de la Vie</h1>
-        <p>
-          Timeline par âge : de la naissance à l’âge adulte, coche les étapes déjà vécues et suis ta progression.
+
+      <header class="site-header">
+        <div class="header-top">
+          <a class="back-link" href="../">
+            <span aria-hidden="true">←</span> Hub
+          </a>
+          <span class="game-badge">JEU 07</span>
+        </div>
+
+        <div class="hero-title">
+          <span class="hero-line solid">CHECKLIST</span>
+          <span class="hero-line stroke">DE LA VIE</span>
+        </div>
+
+        <p class="hero-sub">
+          Timeline de la naissance à l'âge adulte —<br />
+          coche les étapes déjà vécues.
         </p>
       </header>
 
-      <section class="controls" aria-label="Contrôles checklist">
-        <label class="search-wrap" for="searchInput">
-          <span>Rechercher</span>
-          <input
-            id="searchInput"
-            type="search"
-            placeholder="Ex: premiers pas, bac, permis, premier job..."
-            autocomplete="off"
-          />
-        </label>
-
-        <div class="stats" aria-live="polite">
-          <p><strong id="doneCount">0</strong> complétés</p>
-          <p><strong id="totalCount">0</strong> au total</p>
-          <p><strong id="progressPercent">0%</strong> de progression</p>
+      <!-- ── Controls ── -->
+      <section class="controls-bar" aria-label="Contrôles checklist">
+        <div class="stats-row" aria-live="polite">
+          <div class="stat-block">
+            <span id="doneCount" class="stat-num">0</span>
+            <span class="stat-label">complétés</span>
+          </div>
+          <div class="stat-divider" aria-hidden="true"></div>
+          <div class="stat-block">
+            <span id="totalCount" class="stat-num">0</span>
+            <span class="stat-label">au total</span>
+          </div>
+          <div class="stat-divider" aria-hidden="true"></div>
+          <div class="stat-block">
+            <span id="progressPercent" class="stat-num accent">0%</span>
+            <span class="stat-label">progression</span>
+          </div>
         </div>
 
-        <div class="actions">
-          <button id="resetBtn" type="button">Réinitialiser la checklist</button>
+        <div class="controls-row">
+          <label class="search-wrap" for="searchInput">
+            <span class="search-icon" aria-hidden="true">⌕</span>
+            <input
+              id="searchInput"
+              type="search"
+              placeholder="Rechercher une étape…"
+              autocomplete="off"
+            />
+          </label>
+          <button id="resetBtn" type="button" class="reset-btn">
+            Réinitialiser
+          </button>
         </div>
       </section>
 
-      <section class="progress" aria-label="Progression globale">
-        <div class="bar-track">
+      <!-- ── Progress bar ── -->
+      <section class="progress-section" aria-label="Progression globale">
+        <div class="bar-track" role="progressbar" aria-valuemin="0" aria-valuemax="100">
           <div id="progressBar" class="bar-fill" style="width: 0%"></div>
         </div>
       </section>
 
+      <!-- ── Checklist grid (dynamically rendered) ── -->
       <section id="checklistRoot" class="checklist" aria-label="Checklist de vie"></section>
+
     </main>
 
+    <script src="../api-shared.js"></script>
     <script src="script.js"></script>
   </body>
 </html>

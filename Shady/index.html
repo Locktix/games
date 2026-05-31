@@ -33,24 +33,15 @@
           <div class="card card-auth">
             <div class="section-head">
               <h2>Bienvenue</h2>
-              <p class="section-subtitle">Connecte-toi pour rejoindre une partie.</p>
-            </div>
-
-            <div class="tab-row">
-              <button id="btn-tab-login" class="btn tab-btn is-active" type="button">Connexion</button>
-              <button id="btn-tab-signup" class="btn tab-btn" type="button">Inscription</button>
+              <p class="section-subtitle">Choisis un pseudo pour rejoindre une partie.</p>
             </div>
 
             <form id="form-auth" class="stack">
               <label>
-                Email
-                <input id="auth-email" type="email" placeholder="player@infiltre.gg" required />
+                Ton pseudo
+                <input id="auth-displayname" type="text" minlength="2" maxlength="18" placeholder="Ex: Détective47" required autocomplete="nickname" />
               </label>
-              <label>
-                Mot de passe
-                <input id="auth-password" type="password" minlength="6" placeholder="••••••••" required />
-              </label>
-              <button id="btn-auth-submit" class="btn btn-primary" type="submit">Se connecter</button>
+              <button id="btn-auth-submit" class="btn btn-primary" type="submit">Jouer</button>
             </form>
 
             <p id="auth-status" class="status-text"></p>
@@ -309,6 +300,6 @@
       <div id="achievement-toast" class="achievement-toast" aria-live="polite" aria-atomic="true"></div>
     </div>
 
-    <script type="module" src="./app.js"></script>
+    <script src="./app.js"></script>
   </body>
 </html>

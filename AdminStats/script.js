@@ -12,7 +12,13 @@ const eventTableBody = document.getElementById("event-table-body");
 const dayTableBody = document.getElementById("day-table-body");
 
 let autoIntervalId = null;
-const FALLBACK_GAME_COLLECTIONS = ["ActionVerite", "Shady", "TestPurete", "TuPrefere", "WhoAmI", "PianoTiles"];
+
+const API_BASE = (function () {
+  const parts = window.location.pathname.split('/').filter(Boolean);
+  if (parts.length > 0 && parts[parts.length - 1].includes('.')) parts.pop();
+  const up = parts.length > 0 ? '../'.repeat(parts.length) : '';
+  return new URL((up || '') + 'api', window.location.href).href.replace(/\/$/, '');
+})();
 
 function setStatus(text) {
   statusText.textContent = text;
@@ -20,28 +26,19 @@ function setStatus(text) {
 
 function formatDay(value) {
   if (!value) return "Inconnu";
-  if (typeof value === "string") {
-    return value.slice(0, 10);
-  }
-  if (typeof value.toDate === "function") {
-    return value.toDate().toISOString().slice(0, 10);
-  }
-  if (value instanceof Date) {
-    return value.toISOString().slice(0, 10);
-  }
+  if (typeof value === "string") return value.slice(0, 10);
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
   return "Inconnu";
 }
 
 function renderRows(container, entries) {
   container.innerHTML = "";
-
   if (!entries.length) {
     const empty = document.createElement("tr");
     empty.innerHTML = '<td colspan="2">Aucune donnée</td>';
     container.appendChild(empty);
     return;
   }
-
   entries.forEach(([label, count]) => {
     const row = document.createElement("tr");
     row.innerHTML = `<td>${label}</td><td>${count}</td>`;
@@ -50,52 +47,23 @@ function renderRows(container, entries) {
 }
 
 async function loadStats() {
-  const db = window.GamesFirebase?.getDb?.();
-  if (!db) {
-    setStatus("Firebase indisponible. Vérifie la connexion/SDK.");
-    return;
-  }
-
   const limit = Math.max(50, Math.min(2000, Number(limitInput.value) || 500));
-  const gameCollections = window.GamesFirebase?.getGames?.() || FALLBACK_GAME_COLLECTIONS;
-  setStatus(`Chargement des événements (${gameCollections.length} jeux)...`);
+  setStatus("Chargement des événements...");
 
   try {
-    const snapshots = await Promise.all(
-      gameCollections.map((gameName) =>
-        db.collection(gameName).doc("meta").collection("gameEvents").orderBy("createdAt", "desc").limit(limit).get()
-      )
-    );
-
-    const events = [];
-    snapshots.forEach((snapshot, index) => {
-      const gameName = gameCollections[index];
-      snapshot.forEach((doc) => {
-        const data = doc.data() || {};
-        events.push({
-          ...data,
-          game: data.game || gameName,
-        });
-      });
-    });
-
-    events.sort((a, b) => {
-      const aTime = typeof a.createdAt?.toDate === "function" ? a.createdAt.toDate().getTime() : new Date(a.createdAt || 0).getTime();
-      const bTime = typeof b.createdAt?.toDate === "function" ? b.createdAt.toDate().getTime() : new Date(b.createdAt || 0).getTime();
-      return bTime - aTime;
-    });
-
-    const recentEvents = events.slice(0, limit);
+    const res = await fetch(`${API_BASE}/admin-stats.php?limit=${limit}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const events = data.events || [];
 
     const byGame = new Map();
     const byType = new Map();
     const byDay = new Map();
 
-    recentEvents.forEach((data) => {
-      const game = data.game || "unknown";
-      const type = data.eventType || "unknown";
-      const day = formatDay(data.createdAt);
-
+    events.forEach((ev) => {
+      const game = ev.game || "unknown";
+      const type = ev.event_type || "unknown";
+      const day = formatDay(ev.created_at);
       byGame.set(game, (byGame.get(game) || 0) + 1);
       byType.set(type, (byType.get(type) || 0) + 1);
       byDay.set(day, (byDay.get(day) || 0) + 1);
@@ -108,7 +76,7 @@ async function loadStats() {
     const typesEntries = [...byType.entries()].sort(sortDesc);
     const dayEntries = [...byDay.entries()].sort(sortDayDesc);
 
-    totalEventsNode.textContent = String(recentEvents.length);
+    totalEventsNode.textContent = String(events.length);
     totalGamesNode.textContent = String(gamesEntries.length);
     totalTypesNode.textContent = String(typesEntries.length);
 
@@ -116,10 +84,10 @@ async function loadStats() {
     renderRows(eventTableBody, typesEntries);
     renderRows(dayTableBody, dayEntries);
 
-    setStatus(`Mise à jour OK (${recentEvents.length} événements).`);
+    setStatus(`Mise à jour OK (${events.length} événements).`);
   } catch (error) {
     console.error(error);
-    setStatus(`Erreur de lecture Firestore: ${error?.message || error}`);
+    setStatus(`Erreur: ${error?.message || error}`);
   }
 }
 
@@ -131,11 +99,7 @@ function toggleAuto() {
     setStatus("Auto-refresh arrêté.");
     return;
   }
-
-  autoIntervalId = setInterval(() => {
-    loadStats();
-  }, 10000);
-
+  autoIntervalId = setInterval(loadStats, 10000);
   autoButton.textContent = "Auto: ON";
   setStatus("Auto-refresh actif (10s).");
 }

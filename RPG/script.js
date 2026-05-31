@@ -46,21 +46,13 @@ function trackEvent(eventType, payload) {
   window.GamesFirebase?.trackEvent?.(GAME_NAME, eventType, payload);
 }
 
-function getPlayerDocRef() {
-  const playersRef = window.GamesFirebase?.getGameCollectionRef?.(GAME_NAME, "players");
-  if (!playersRef || !state.playerName) {
-    return null;
-  }
-
-  const safeId = state.playerName.toLowerCase().replace(/[^a-z0-9_-]/g, "_").slice(0, 40) || "player";
-  return playersRef.doc(safeId);
+function rpgSaveKey(playerName) {
+  const safeId = (playerName || "player").toLowerCase().replace(/[^a-z0-9_-]/g, "_").slice(0, 40);
+  return `rpg_save_${safeId}`;
 }
 
 async function savePlayerData(scene, reason = "autosave") {
-  const docRef = getPlayerDocRef();
-  if (!docRef || !scene?.player) {
-    return;
-  }
+  if (!state.playerName || !scene?.player) return;
 
   const payload = {
     playerName: state.playerName,
@@ -71,32 +63,25 @@ async function savePlayerData(scene, reason = "autosave") {
     inventory: [...state.inventory],
     questStarted: state.questStarted,
     questCompleted: state.questCompleted,
-    reason,
-    updatedAt: firebase?.firestore?.FieldValue?.serverTimestamp
-      ? firebase.firestore.FieldValue.serverTimestamp()
-      : new Date().toISOString(),
+    savedAt: new Date().toISOString(),
   };
 
   try {
-    await docRef.set(payload, { merge: true });
+    localStorage.setItem(rpgSaveKey(state.playerName), JSON.stringify(payload));
+    trackEvent("player_saved", { reason, playerName: state.playerName });
   } catch (error) {
     console.warn("[RPG] savePlayerData failed:", error?.message || error);
   }
 }
 
 async function loadPlayerData(scene, playerName) {
-  const docRef = getPlayerDocRef();
-  if (!docRef) {
-    return false;
-  }
+  if (!playerName) return false;
 
   try {
-    const snapshot = await docRef.get();
-    if (!snapshot.exists) {
-      return false;
-    }
+    const raw = localStorage.getItem(rpgSaveKey(playerName));
+    if (!raw) return false;
 
-    const data = snapshot.data() || {};
+    const data = JSON.parse(raw);
     state.hp = typeof data.hp === "number" ? Phaser.Math.Clamp(data.hp, 1, 100) : 100;
     state.inventory = Array.isArray(data.inventory) ? data.inventory.slice(0, 12) : [];
     state.questStarted = Boolean(data.questStarted);

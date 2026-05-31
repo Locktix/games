@@ -3,61 +3,81 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Games Hub</title>
-    <meta
-      name="description"
-      content="Hub centralisé pour lancer rapidement mes deux jeux."
-    />
-    <meta property="og:title" content="Games Hub" />
-    <meta
-      property="og:description"
-      content="Hub centralisé pour lancer rapidement mes deux jeux."
-    />
+    <title>Game Room</title>
+    <meta name="description" content="Collection de jeux — lance-toi en un clic." />
+    <meta property="og:title" content="Game Room" />
+    <meta property="og:description" content="Collection de jeux — lance-toi en un clic." />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://locktix.github.io/games/" />
-    <meta property="og:image" content="https://locktix.github.io/games/favicon.svg" />
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Games Hub" />
-    <meta
-      name="twitter:description"
-      content="Hub centralisé pour lancer rapidement mes deux jeux."
-    />
-    <meta name="twitter:image" content="https://locktix.github.io/games/favicon.svg" />
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./shared.css" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <main class="container">
-      <header class="hero">
-        <p class="overline">Bienvenue</p>
-        <h1>Games Hub</h1>
-        <p class="subtitle">Choisis un jeu et lance-toi en un clic.</p>
+    <div class="noise" aria-hidden="true"></div>
+    <div class="bg-orb orb-1" aria-hidden="true"></div>
+    <div class="bg-orb orb-2" aria-hidden="true"></div>
+
+    <main class="hub">
+      <header class="hub-header">
+        <div class="header-meta">
+          <span class="pulse-dot" aria-hidden="true"></span>
+          <span class="header-label">Collection · <time id="year"></time></span>
+        </div>
+        <h1 class="hub-title" aria-label="Game Room">
+          <span class="title-game">GAME</span>
+          <span class="title-room">ROOM</span>
+        </h1>
+        <p class="hub-sub">Sélectionne un jeu pour commencer.</p>
       </header>
 
-      <section class="games" id="games-list" aria-label="Liste des jeux" aria-busy="true">
-        <p id="games-status" class="games-status">Chargement des jeux…</p>
+      <section class="games-grid" id="games-list" aria-label="Liste des jeux" aria-busy="true">
+        <div id="games-status" class="games-status" role="status">
+          <span class="loading-bar"></span>
+          <span>Chargement…</span>
+        </div>
       </section>
 
       <template id="game-card-template">
         <a class="game-card" rel="noopener noreferrer">
-          <div class="game-content">
-            <span class="badge"></span>
-            <h2></h2>
-            <p></p>
+          <div class="card-glow" aria-hidden="true"></div>
+          <header class="card-top">
+            <span class="card-badge"></span>
+            <span class="card-arrow" aria-hidden="true">↗</span>
+          </header>
+          <div class="card-body">
+            <h2 class="card-title"></h2>
+            <p class="card-desc"></p>
           </div>
-          <span class="arrow" aria-hidden="true">→</span>
+          <span class="card-num" aria-hidden="true"></span>
         </a>
       </template>
+
+      <footer class="hub-footer">
+        <span>Hébergé sur <strong>o2switch</strong></span>
+        <span class="footer-sep" aria-hidden="true">·</span>
+        <span>PHP + MySQL</span>
+      </footer>
     </main>
 
+    <script src="./api-shared.js"></script>
     <script>
+      document.getElementById("year").textContent = new Date().getFullYear();
+
+      const CARD_COLORS = [
+        "#38bdf8",
+        "#bef264",
+        "#fb7185",
+        "#fcd34d",
+        "#f0abfc",
+        "#818cf8",
+        "#6ee7b7",
+        "#fdba74",
+        "#5eead4",
+      ];
+
       (async function renderGames() {
         const list = document.getElementById("games-list");
         const template = document.getElementById("game-card-template");
@@ -65,23 +85,29 @@
 
         try {
           const response = await fetch("./games.json", { cache: "no-cache" });
-          if (!response.ok) {
-            throw new Error("HTTP " + response.status);
-          }
+          if (!response.ok) throw new Error("HTTP " + response.status);
 
           const games = await response.json();
-          if (!Array.isArray(games) || games.length === 0) {
-            throw new Error("Aucun jeu disponible.");
-          }
+          if (!Array.isArray(games) || games.length === 0) throw new Error("Aucun jeu disponible.");
 
           const fragment = document.createDocumentFragment();
-          games.forEach((game) => {
+          games.forEach((game, index) => {
             const node = template.content.firstElementChild.cloneNode(true);
+            const accent = CARD_COLORS[index % CARD_COLORS.length];
+            const num = String(index + 1).padStart(2, "0");
+
             node.href = game.href;
-            node.setAttribute("aria-label", `Ouvrir le jeu ${game.title}`);
-            node.querySelector(".badge").textContent = game.badge;
-            node.querySelector("h2").textContent = game.title;
-            node.querySelector("p").textContent = game.description;
+            node.setAttribute("aria-label", `Jouer à ${game.title}`);
+            node.style.setProperty("--accent", accent);
+            node.style.setProperty("--num", `"${num}"`);
+            if (index === 0) node.classList.add("is-featured");
+
+            node.querySelector(".card-badge").textContent = game.badge;
+            node.querySelector(".card-title").textContent = game.title;
+            node.querySelector(".card-desc").textContent = game.description;
+            node.querySelector(".card-num").textContent = num;
+            node.style.animationDelay = `${index * 60}ms`;
+
             fragment.appendChild(node);
           });
 
@@ -89,11 +115,10 @@
           list.appendChild(fragment);
           list.setAttribute("aria-busy", "false");
         } catch (error) {
-          console.error("[GamesHub] Impossible de charger games.json", error);
+          console.error("[GamesHub]", error);
           list.setAttribute("aria-busy", "false");
           if (status) {
-            status.textContent =
-              "Impossible de charger la liste des jeux. Rafraîchis la page.";
+            status.textContent = "Impossible de charger la liste des jeux. Rafraîchis la page.";
             status.classList.add("is-error");
           }
         }

@@ -25,8 +25,6 @@ const refreshTopButton = document.getElementById("refresh-top-btn");
 const leaderboardList = document.getElementById("leaderboard-list");
 const playerNameInput = document.getElementById("player-name");
 
-const db = window.GamesFirebase?.getDb?.() || null;
-const fieldValue = window.firebase?.firestore?.FieldValue;
 
 const state = {
   running: false,
@@ -371,29 +369,10 @@ function tick(timestamp) {
 }
 
 async function loadLeaderboard() {
-  if (!db) {
-    leaderboardList.innerHTML = "<li>Firebase indisponible.</li>";
-    return;
-  }
-
   setStatus("Chargement du top global...");
 
   try {
-    const scoresRef = window.GamesFirebase?.getGameCollectionRef?.(GAME_NAME, "scores");
-    if (!scoresRef) {
-      throw new Error("Collection scores introuvable");
-    }
-
-    const snapshot = await scoresRef.orderBy("score", "desc").limit(5).get();
-    const entries = [];
-
-    snapshot.forEach((doc) => {
-      const data = doc.data() || {};
-      entries.push({
-        name: data.playerName || "Anonyme",
-        score: Number(data.score) || 0,
-      });
-    });
+    const entries = await window.GamesAPI.getScores(GAME_NAME, 5);
 
     leaderboardList.innerHTML = "";
 
@@ -405,7 +384,7 @@ async function loadLeaderboard() {
 
     entries.forEach((entry) => {
       const item = document.createElement("li");
-      item.textContent = `${entry.name} — ${entry.score}`;
+      item.textContent = `${entry.player_name} — ${entry.score}`;
       leaderboardList.appendChild(item);
     });
 
@@ -418,47 +397,15 @@ async function loadLeaderboard() {
 }
 
 async function saveScore(score, durationSeconds, reason) {
-  if (!db || !state.canSaveScore || score <= 0) {
-    return;
-  }
+  if (!state.canSaveScore || score <= 0) return;
 
   state.canSaveScore = false;
 
   try {
     const playerName = getPlayerName() || "Anonyme";
-    const scoresRef = window.GamesFirebase?.getGameCollectionRef?.(GAME_NAME, "scores");
-    const metaRef = window.GamesFirebase?.getGameDocRef?.(GAME_NAME);
-
-    if (!scoresRef || !metaRef) {
-      throw new Error("Références Firestore indisponibles");
-    }
-
-    await scoresRef.add({
-      game: GAME_NAME,
-      playerName,
-      score,
-      durationSeconds,
-      reason,
-      createdAt: fieldValue?.serverTimestamp ? fieldValue.serverTimestamp() : new Date().toISOString(),
-    });
-
-    const bestRef = metaRef.collection("aggregates").doc("leaderboard");
-    const currentBest = await bestRef.get();
-    const currentBestScore = Number(currentBest.data()?.bestScore || 0);
-
-    if (score > currentBestScore) {
-      await bestRef.set(
-        {
-          bestScore: score,
-          bestPlayer: playerName,
-          updatedAt: fieldValue?.serverTimestamp ? fieldValue.serverTimestamp() : new Date().toISOString(),
-        },
-        { merge: true }
-      );
-    }
-
+    await window.GamesAPI.saveScore(GAME_NAME, playerName, score, { durationSeconds, reason });
     await loadLeaderboard();
-    setStatus("Score sauvegardé sur Firebase.");
+    setStatus("Score sauvegardé.");
   } catch (error) {
     console.error(error);
     setStatus(`Sauvegarde score impossible: ${error?.message || error}`);
@@ -513,9 +460,6 @@ function bootstrap() {
   bindEvents();
   loadLeaderboard();
 
-  if (!window.GamesFirebase?.isReady) {
-    setStatus("Firebase indisponible. Le jeu reste jouable en local.");
-  }
 }
 
 bootstrap();

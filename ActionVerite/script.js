@@ -39,7 +39,6 @@ const completeTurnButton = document.getElementById("complete-turn-btn");
 const endVoteWrap = document.getElementById("end-vote-wrap");
 const voteEndButton = document.getElementById("vote-end-btn");
 const voteStatus = document.getElementById("vote-status");
-const firebaseDb = window.GamesFirebase?.getDb?.() || null;
 const trackGameEvent = (eventType, payload = {}) => {
   window.GamesFirebase?.trackEvent?.("ActionVerite", eventType, payload);
 };
@@ -800,7 +799,6 @@ function extendDeckWithGeneratedPrompts() {
   });
 }
 extendDeckWithGeneratedPrompts();
-const FIELD_VALUE = window.firebase?.firestore?.FieldValue;
 const CLIENT_ID_KEY = "actionVeriteClientId";
 const MAIN_PAGE_URL = "../index.html";
 
@@ -836,20 +834,6 @@ function getOrCreateClientId() {
   return nextId;
 }
 
-function getRoomsCollection() {
-  if (!firebaseDb) {
-    return null;
-  }
-  return firebaseDb.collection("ActionVerite").doc("multiplayer").collection("rooms");
-}
-
-function getRoomRef(roomCode) {
-  const rooms = getRoomsCollection();
-  if (!rooms || !roomCode) {
-    return null;
-  }
-  return rooms.doc(roomCode);
-}
 
 function setScreen(screenName) {
   Object.entries(screens).forEach(([key, node]) => {
@@ -1082,30 +1066,21 @@ function refreshRoomLobbyUI(data = null) {
   startMultiButton.classList.toggle("is-hidden", !canStart);
 }
 
-function generateRoomCode() {
-  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let code = "";
-  for (let index = 0; index < 6; index += 1) {
-    code += alphabet[Math.floor(Math.random() * alphabet.length)];
-  }
-  return code;
-}
+let avPollInterval = null;
 
-async function reserveRoomCode() {
-  const rooms = getRoomsCollection();
-  if (!rooms) {
-    throw new Error("Firebase indisponible pour le mode multi.");
-  }
-
-  for (let attempt = 0; attempt < 8; attempt += 1) {
-    const code = generateRoomCode();
-    const existing = await rooms.doc(code).get();
-    if (!existing.exists) {
-      return code;
+function startRoomPolling(roomCode) {
+  stopRoomSubscription();
+  avPollInterval = setInterval(async () => {
+    const data = await window.GamesAPI.avGetRoom(roomCode);
+    if (!data) {
+      setupStatus.textContent = "Le salon a été supprimé.";
+      stopRoomSubscription();
+      state.multiplayer.roomCode = "";
+      refreshRoomLobbyUI();
+      return;
     }
-  }
-
-  throw new Error("Impossible de générer un code salon, réessaie.");
+    applyMultiplayerDoc(data);
+  }, 2000);
 }
 
 function applyMultiplayerDoc(data) {
@@ -1149,94 +1124,46 @@ function applyMultiplayerDoc(data) {
 }
 
 function stopRoomSubscription() {
-  if (typeof state.multiplayer.unsubscribe === "function") {
-    state.multiplayer.unsubscribe();
+  if (avPollInterval) {
+    clearInterval(avPollInterval);
+    avPollInterval = null;
   }
   state.multiplayer.unsubscribe = null;
 }
 
-function subscribeToRoom(roomCode) {
-  const roomRef = getRoomRef(roomCode);
-  if (!roomRef) {
-    return;
-  }
-
-  stopRoomSubscription();
-  state.multiplayer.unsubscribe = roomRef.onSnapshot(
-    (snapshot) => {
-      if (!snapshot.exists) {
-        setupStatus.textContent = "Le salon a été supprimé.";
-        stopRoomSubscription();
-        state.multiplayer.roomCode = "";
-        refreshRoomLobbyUI();
-        return;
-      }
-
-      const data = snapshot.data() || {};
-      state.multiplayer.roomCode = data.roomCode || roomCode;
-      applyMultiplayerDoc(data);
-    },
-    (error) => {
-      setupStatus.textContent = `Erreur salon: ${error?.message || error}`;
-    }
-  );
-}
-
 async function createRoom() {
-  if (!firebaseDb) {
-    setupStatus.textContent = "Firebase indisponible pour le mode multi.";
-    return;
-  }
-
   const playerResult = collectMultiName();
   if (!playerResult.valid) {
     setupStatus.textContent = playerResult.message;
     return;
   }
 
-  const roomCode = await reserveRoomCode();
-  const roomRef = getRoomRef(roomCode);
-  if (!roomRef) {
+  const room = await window.GamesAPI.avCreateRoom(
+    state.multiplayer.clientId,
+    playerResult.name,
+    state.difficulty,
+    [{ id: state.multiplayer.clientId, name: playerResult.name }]
+  );
+
+  if (!room) {
     setupStatus.textContent = "Impossible de créer le salon.";
     return;
   }
 
-  const createdAt = FIELD_VALUE?.serverTimestamp ? FIELD_VALUE.serverTimestamp() : new Date().toISOString();
-  const payload = {
-    roomCode,
-    mode: "waiting",
-    difficulty: state.difficulty,
-    hostId: state.multiplayer.clientId,
-    hostName: playerResult.name,
-    players: [{ id: state.multiplayer.clientId, name: playerResult.name }],
-    currentIndex: 0,
-    currentCardType: null,
-    currentCardText: "",
-    createdAt,
-    updatedAt: createdAt,
-  };
-
-  await roomRef.set(payload, { merge: true });
-
   state.multiplayer.playerName = playerResult.name;
-  state.multiplayer.roomCode = roomCode;
+  state.multiplayer.roomCode = room.code;
   state.multiplayer.isHost = true;
-  roomCodeInput.value = roomCode;
-  setupStatus.textContent = `Salon créé: ${roomCode}`;
-  subscribeToRoom(roomCode);
+  roomCodeInput.value = room.code;
+  setupStatus.textContent = `Salon créé: ${room.code}`;
+  startRoomPolling(room.code);
 
   trackGameEvent("multi_room_created", {
-    roomCode,
+    roomCode: room.code,
     difficulty: state.difficulty,
   });
 }
 
 async function joinRoom() {
-  if (!firebaseDb) {
-    setupStatus.textContent = "Firebase indisponible pour le mode multi.";
-    return;
-  }
-
   const playerResult = collectMultiName();
   if (!playerResult.valid) {
     setupStatus.textContent = playerResult.message;
@@ -1249,50 +1176,36 @@ async function joinRoom() {
     return;
   }
 
-  const roomRef = getRoomRef(roomCode);
-  if (!roomRef) {
-    setupStatus.textContent = "Impossible de rejoindre ce salon.";
+  const existing = await window.GamesAPI.avGetRoom(roomCode);
+  if (!existing) {
+    setupStatus.textContent = "Salon introuvable.";
     return;
   }
 
-  await firebaseDb.runTransaction(async (transaction) => {
-    const snapshot = await transaction.get(roomRef);
-    if (!snapshot.exists) {
-      throw new Error("Salon introuvable.");
+  if (existing.mode === "playing") {
+    const inRoom = (existing.players || []).some((p) => p.id === state.multiplayer.clientId);
+    if (!inRoom) {
+      setupStatus.textContent = "Partie en cours: impossible de rejoindre maintenant.";
+      return;
     }
+  }
 
-    const data = snapshot.data() || {};
-    const players = Array.isArray(data.players) ? [...data.players] : [];
-    const existingIndex = players.findIndex((player) => player?.id === state.multiplayer.clientId);
+  const players = Array.isArray(existing.players) ? [...existing.players] : [];
+  const idx = players.findIndex((p) => p.id === state.multiplayer.clientId);
+  if (idx >= 0) {
+    players[idx] = { ...players[idx], name: playerResult.name };
+  } else {
+    players.push({ id: state.multiplayer.clientId, name: playerResult.name });
+  }
 
-    if (data.mode === "playing" && existingIndex < 0) {
-      throw new Error("Partie en cours: impossible de rejoindre maintenant.");
-    }
-
-    if (existingIndex >= 0) {
-      players[existingIndex] = { ...players[existingIndex], name: playerResult.name };
-    } else {
-      players.push({ id: state.multiplayer.clientId, name: playerResult.name });
-    }
-
-    transaction.set(
-      roomRef,
-      {
-        players,
-        updatedAt: FIELD_VALUE?.serverTimestamp ? FIELD_VALUE.serverTimestamp() : new Date().toISOString(),
-      },
-      { merge: true }
-    );
-  });
+  await window.GamesAPI.avUpdateRoom(roomCode, { players });
 
   state.multiplayer.playerName = playerResult.name;
   state.multiplayer.roomCode = roomCode;
   setupStatus.textContent = `Connecté au salon ${roomCode}.`;
-  subscribeToRoom(roomCode);
+  startRoomPolling(roomCode);
 
-  trackGameEvent("multi_room_joined", {
-    roomCode,
-  });
+  trackGameEvent("multi_room_joined", { roomCode });
 }
 
 async function startMultiplayerGame() {
@@ -1301,23 +1214,14 @@ async function startMultiplayerGame() {
     return;
   }
 
-  const roomRef = getRoomRef(state.multiplayer.roomCode);
-  if (!roomRef) {
-    return;
-  }
-
-  await roomRef.set(
-    {
-      mode: "playing",
-      currentIndex: 0,
-      difficulty: state.difficulty,
-      currentCardType: null,
-      currentCardText: "",
-      endVotes: [],
-      updatedAt: FIELD_VALUE?.serverTimestamp ? FIELD_VALUE.serverTimestamp() : new Date().toISOString(),
-    },
-    { merge: true }
-  );
+  await window.GamesAPI.avUpdateRoom(state.multiplayer.roomCode, {
+    status: "playing",
+    currentIndex: 0,
+    difficulty: state.difficulty,
+    currentType: null,
+    currentText: "",
+    endVotes: [],
+  });
 
   trackGameEvent("multi_game_started", {
     roomCode: state.multiplayer.roomCode,
@@ -1326,67 +1230,41 @@ async function startMultiplayerGame() {
 }
 
 async function leaveRoom() {
-  if (!state.multiplayer.roomCode || !firebaseDb) {
-    stopRoomSubscription();
-    return;
-  }
-
-  const roomRef = getRoomRef(state.multiplayer.roomCode);
+  const code = state.multiplayer.roomCode;
   stopRoomSubscription();
 
-  if (!roomRef) {
+  if (!code) {
     state.multiplayer.roomCode = "";
     return;
   }
 
   try {
-    await firebaseDb.runTransaction(async (transaction) => {
-      const snapshot = await transaction.get(roomRef);
-      if (!snapshot.exists) {
-        return;
-      }
+    const existing = await window.GamesAPI.avGetRoom(code);
+    if (existing) {
+      const players = (existing.players || []).filter((p) => p.id !== state.multiplayer.clientId);
+      if (!players.length) {
+        await window.GamesAPI.avDeleteRoom(code);
+      } else {
+        const wasHost = existing.hostId === state.multiplayer.clientId;
+        const nextHostId   = wasHost ? players[0].id   : existing.hostId;
+        const nextHostName = wasHost ? players[0].name : existing.hostName;
+        const nextVotes = (existing.endVotes || []).filter((id) => players.some((p) => p.id === id));
+        const requiredVotes = Math.ceil(players.length * 0.75);
+        const endByVote = nextVotes.length >= requiredVotes;
+        const safeIndex = Math.min(existing.currentIndex, Math.max(players.length - 1, 0));
 
-      const data = snapshot.data() || {};
-      const players = Array.isArray(data.players) ? [...data.players] : [];
-      const nextPlayers = players.filter((player) => player?.id !== state.multiplayer.clientId);
-      const nextPlayerIds = nextPlayers.map((player) => player?.id).filter(Boolean);
-      const votes = Array.isArray(data.endVotes) ? data.endVotes : [];
-      const nextVotes = votes.filter((playerId) => nextPlayerIds.includes(playerId));
-      const wasHost = data.hostId === state.multiplayer.clientId;
-
-      if (!nextPlayers.length) {
-        transaction.delete(roomRef);
-        return;
-      }
-
-      const nextHost = wasHost ? nextPlayers[0]?.id : data.hostId;
-      const nextHostName = nextPlayers.find((player) => player.id === nextHost)?.name || data.hostName;
-      const safeIndex = Math.min(Number(data.currentIndex) || 0, Math.max(nextPlayers.length - 1, 0));
-      const requiredVotes = Math.ceil(nextPlayers.length * 0.75);
-      const endByVote = nextPlayers.length > 0 && nextVotes.length >= requiredVotes;
-
-      transaction.set(
-        roomRef,
-        {
-          players: nextPlayers,
-          hostId: nextHost,
+        await window.GamesAPI.avUpdateRoom(code, {
+          players,
+          hostId: nextHostId,
           hostName: nextHostName,
           currentIndex: safeIndex,
-          mode: data.mode === "playing" && nextPlayers.length < 2 ? "waiting" : endByVote ? "ended" : data.mode,
-          currentCardType:
-            data.mode === "playing" && (nextPlayers.length < 2 || endByVote)
-              ? null
-              : data.currentCardType || null,
-          currentCardText:
-            data.mode === "playing" && (nextPlayers.length < 2 || endByVote)
-              ? ""
-              : data.currentCardText || "",
+          status: existing.mode === "playing" && players.length < 2 ? "waiting" : endByVote ? "ended" : existing.mode,
+          currentType:  existing.mode === "playing" && (players.length < 2 || endByVote) ? null : existing.currentCardType,
+          currentText:  existing.mode === "playing" && (players.length < 2 || endByVote) ? "" : existing.currentCardText,
           endVotes: nextVotes,
-          updatedAt: FIELD_VALUE?.serverTimestamp ? FIELD_VALUE.serverTimestamp() : new Date().toISOString(),
-        },
-        { merge: true }
-      );
-    });
+        });
+      }
+    }
   } catch (error) {
     console.warn("[ActionVerite] leaveRoom error:", error?.message || error);
   }
@@ -1418,15 +1296,7 @@ async function drawCard(type) {
 
     const pool = DECK[state.difficulty][type];
     const text = pickRandomFrom(pool);
-    const roomRef = getRoomRef(state.multiplayer.roomCode);
-    await roomRef?.set(
-      {
-        currentCardType: type,
-        currentCardText: text,
-        updatedAt: FIELD_VALUE?.serverTimestamp ? FIELD_VALUE.serverTimestamp() : new Date().toISOString(),
-      },
-      { merge: true }
-    );
+    await window.GamesAPI.avUpdateRoom(state.multiplayer.roomCode, { currentType: type, currentText: text });
     return;
   }
 
@@ -1453,17 +1323,12 @@ async function completeTurn() {
       return;
     }
 
-    const roomRef = getRoomRef(state.multiplayer.roomCode);
     const nextIndex = state.players.length ? (state.currentIndex + 1) % state.players.length : 0;
-    await roomRef?.set(
-      {
-        currentIndex: nextIndex,
-        currentCardType: null,
-        currentCardText: "",
-        updatedAt: FIELD_VALUE?.serverTimestamp ? FIELD_VALUE.serverTimestamp() : new Date().toISOString(),
-      },
-      { merge: true }
-    );
+    await window.GamesAPI.avUpdateRoom(state.multiplayer.roomCode, {
+      currentIndex: nextIndex,
+      currentType: null,
+      currentText: "",
+    });
     return;
   }
 
@@ -1474,56 +1339,26 @@ async function completeTurn() {
 }
 
 async function voteToEndGame() {
-  if (state.gameMode !== "multi" || !state.multiplayer.roomCode) {
-    return;
-  }
+  if (state.gameMode !== "multi" || !state.multiplayer.roomCode) return;
 
-  const roomRef = getRoomRef(state.multiplayer.roomCode);
-  if (!roomRef) {
-    return;
-  }
+  const data = await window.GamesAPI.avGetRoom(state.multiplayer.roomCode);
+  if (!data || data.mode !== "playing") return;
 
-  await firebaseDb.runTransaction(async (transaction) => {
-    const snapshot = await transaction.get(roomRef);
-    if (!snapshot.exists) {
-      throw new Error("Salon introuvable.");
-    }
+  const players = Array.isArray(data.players) ? data.players : [];
+  const playerIds = players.map((p) => p.id).filter(Boolean);
+  if (!playerIds.includes(state.multiplayer.clientId)) return;
 
-    const data = snapshot.data() || {};
-    if (data.mode !== "playing") {
-      return;
-    }
+  const votes = Array.isArray(data.endVotes) ? [...data.endVotes] : [];
+  if (!votes.includes(state.multiplayer.clientId)) votes.push(state.multiplayer.clientId);
 
-    const players = Array.isArray(data.players) ? data.players : [];
-    const playerIds = players.map((player) => player?.id).filter(Boolean);
-    if (!playerIds.includes(state.multiplayer.clientId)) {
-      throw new Error("Tu n'es plus dans cette partie.");
-    }
+  const requiredVotes = Math.ceil(playerIds.length * 0.75);
+  const shouldEnd = votes.length >= requiredVotes;
 
-    const votes = Array.isArray(data.endVotes) ? [...data.endVotes] : [];
-    if (!votes.includes(state.multiplayer.clientId)) {
-      votes.push(state.multiplayer.clientId);
-    }
-
-    const requiredVotes = Math.ceil(playerIds.length * 0.75);
-    const shouldEnd = votes.length >= requiredVotes;
-
-    transaction.set(
-      roomRef,
-      {
-        endVotes: votes,
-        mode: shouldEnd ? "ended" : data.mode,
-        currentCardType: shouldEnd ? null : data.currentCardType || null,
-        currentCardText: shouldEnd ? "" : data.currentCardText || "",
-        endedAt: shouldEnd
-          ? FIELD_VALUE?.serverTimestamp
-            ? FIELD_VALUE.serverTimestamp()
-            : new Date().toISOString()
-          : data.endedAt || null,
-        updatedAt: FIELD_VALUE?.serverTimestamp ? FIELD_VALUE.serverTimestamp() : new Date().toISOString(),
-      },
-      { merge: true }
-    );
+  await window.GamesAPI.avUpdateRoom(state.multiplayer.roomCode, {
+    endVotes: votes,
+    status: shouldEnd ? "ended" : data.mode,
+    currentType: shouldEnd ? null : data.currentCardType,
+    currentText: shouldEnd ? "" : data.currentCardText,
   });
 }
 
@@ -1540,7 +1375,7 @@ modeSoloButton.addEventListener("click", () => {
 modeMultiButton.addEventListener("click", () => {
   state.gameMode = "multi";
   applySetupModeUI();
-  setupStatus.textContent = firebaseDb ? "Crée un salon ou rejoins un code existant." : "Firebase requis pour le mode multi.";
+  setupStatus.textContent = "Crée un salon ou rejoins un code existant.";
   setScreen("setup");
   setCardDisplay(null, "");
   updateGameModeUI();
@@ -1578,15 +1413,7 @@ difficultyGrid.addEventListener("click", (event) => {
   updateDifficultyUI();
 
   if (state.gameMode === "multi" && state.multiplayer.isHost && state.multiplayer.roomCode) {
-    const roomRef = getRoomRef(state.multiplayer.roomCode);
-    roomRef
-      ?.set(
-        {
-          difficulty,
-          updatedAt: FIELD_VALUE?.serverTimestamp ? FIELD_VALUE.serverTimestamp() : new Date().toISOString(),
-        },
-        { merge: true }
-      )
+    window.GamesAPI.avUpdateRoom(state.multiplayer.roomCode, { difficulty })
       .catch((error) => {
         setupStatus.textContent = `Erreur difficulté: ${error?.message || error}`;
       });

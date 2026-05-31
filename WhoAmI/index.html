@@ -3,88 +3,118 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>Qui Suis-Je ?</title>
+    <title>WhoAmI — Qui Suis-Je ?</title>
     <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../shared.css" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <div class="noise" aria-hidden="true"></div>
+
     <main class="app">
+
+      <!-- ── HOME ── -->
       <section id="home-screen" class="screen active">
-        <div class="logo-wrap">
-          <p class="chip">Jeu mobile</p>
-          <h1>Qui suis-je ?</h1>
-          <p class="subtitle">
-            Pose ton téléphone sur ton front.<br />
-            Les autres voient le nom, pas toi.
-          </p>
-        </div>
+        <div class="home-inner">
+          <header class="home-header">
+            <span class="game-badge">JEU 02</span>
+            <h1 class="home-title">
+              <span class="title-solid">WHO</span>
+              <span class="title-stroke">AM I?</span>
+            </h1>
+            <p class="home-sub">
+              Pose ton téléphone sur ton front.<br />
+              Les autres voient le nom, <em>pas toi</em>.
+            </p>
+          </header>
 
-        <div class="mode-wrap">
-          <label for="mode-select" class="subtitle">Mode de jeu</label>
-          <select id="mode-select" class="mode-select" aria-label="Choisir un mode de jeu">
-            <option value="celebrities" selected>Personnalités connues</option>
-            <option value="animals">Animaux</option>
-            <option value="objects">Objets</option>
-            <option value="countries">Pays</option>
-            <option value="all">Tout</option>
-          </select>
-        </div>
+          <div class="mode-section">
+            <label for="mode-select" class="field-label">Mode de jeu</label>
+            <div class="select-wrap">
+              <select id="mode-select" aria-label="Choisir un mode de jeu">
+                <option value="celebrities" selected>Personnalités connues</option>
+                <option value="animals">Animaux</option>
+                <option value="objects">Objets</option>
+                <option value="countries">Pays</option>
+                <option value="all">Tout mélanger</option>
+              </select>
+              <span class="select-chevron" aria-hidden="true">↓</span>
+            </div>
+          </div>
 
-        <button id="play-btn" class="btn btn-primary">Jouer</button>
+          <button id="play-btn" class="btn-cta">
+            <span>Jouer</span>
+            <span class="btn-arrow" aria-hidden="true">↗</span>
+          </button>
+        </div>
       </section>
 
+      <!-- ── COUNTDOWN ── -->
       <section id="countdown-screen" class="screen">
-        <p class="chip">Prépare-toi</p>
-        <h2>Mets le téléphone sur ton front</h2>
-        <p class="subtitle">Le mot arrive dans...</p>
-        <div id="countdown-number" class="countdown">3</div>
+        <div class="countdown-inner">
+          <p class="mono-label">Prépare-toi</p>
+          <div id="countdown-number" class="countdown">3</div>
+          <p class="sub-text">Mets le téléphone sur ton front</p>
+        </div>
       </section>
 
+      <!-- ── REVEAL ── -->
       <section id="reveal-screen" class="screen">
         <div id="name-card" class="name-card">
-          <img id="role-image" class="role-image" alt="Illustration du rôle" />
-          <div class="role-text">
-            <p id="role-name" class="role-name">Nom</p>
-            <p id="role-hint" class="role-hint">Précision</p>
+          <div class="name-card-meta">
+            <div class="name-card-img-wrap">
+              <img id="role-image" class="role-image" alt="" />
+            </div>
+            <p id="role-hint" class="role-hint"></p>
           </div>
-        </div>
 
-        <div class="reveal-actions" aria-label="Actions de la manche">
-          <button id="restart-round-btn" class="btn btn-ghost">Relancer</button>
-          <button id="change-mode-home-btn" class="btn btn-ghost">Changer de mode</button>
-          <button id="found-quick-btn" class="btn btn-ghost btn-ghost-success">J'ai découvert</button>
+          <p id="role-name" class="role-name"></p>
+
+          <div class="reveal-actions">
+            <button id="restart-round-btn" class="btn-ghost">Relancer</button>
+            <button id="change-mode-home-btn" class="btn-ghost">Mode</button>
+            <button id="found-quick-btn" class="btn-ghost btn-ghost-lime">Trouvé !</button>
+          </div>
         </div>
       </section>
+
     </main>
 
+    <!-- ── ACTION MENU (long press) ── -->
     <section id="action-menu" class="action-menu" aria-hidden="true">
       <div class="action-panel">
-        <h3>Choisis une action</h3>
-        <button id="change-person-btn" class="btn btn-primary">Changer de personne</button>
-        <button id="found-btn" class="btn btn-secondary">J'ai découvert</button>
+        <p class="mono-label">Que veux-tu faire ?</p>
+        <button id="change-person-btn" class="btn-action">Changer de personnage</button>
+        <button id="found-btn" class="btn-action btn-action-lime">J'ai trouvé !</button>
       </div>
     </section>
 
+    <!-- ── RESULT OVERLAY ── -->
     <section id="result-overlay" class="result-overlay" aria-hidden="true">
       <div class="result-panel">
-        <p class="chip">Bravo</p>
-        <div class="result-role-row">
-          <img id="result-role-image" class="result-role-image" alt="Illustration du rôle trouvé" />
-          <div>
-            <h3 id="result-role">Rôle</h3>
-            <p id="result-role-hint" class="subtitle">Précision</p>
+        <p class="result-eyebrow">Bravo</p>
+        <div class="result-body">
+          <img id="result-role-image" class="result-role-image" alt="" />
+          <div class="result-text">
+            <h3 id="result-role"></h3>
+            <p id="result-role-hint" class="result-hint"></p>
+            <p id="result-time" class="result-time"></p>
           </div>
         </div>
-        <p id="result-time" class="subtitle">Trouvé en 0.0s</p>
-        <button id="next-round-btn" class="btn btn-primary">Nouvelle manche</button>
+        <button id="next-round-btn" class="btn-cta">
+          <span>Nouvelle manche</span>
+          <span class="btn-arrow" aria-hidden="true">↗</span>
+        </button>
       </div>
     </section>
 
+    <!-- ── GREEN FLASH ── -->
     <div id="green-flash" class="green-flash" aria-hidden="true"></div>
 
-    <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore-compat.js"></script>
-    <script src="../firebase-shared.js"></script>
+    <script src="../api-shared.js"></script>
     <script src="script.js"></script>
   </body>
 </html>

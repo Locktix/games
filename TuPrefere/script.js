@@ -187,8 +187,6 @@ const statsGridNode = document.querySelector(".stats-grid");
 const globalTotalCountNode = document.getElementById("global-total-count");
 const globalAStatsNode = document.getElementById("global-a-stats");
 const globalBStatsNode = document.getElementById("global-b-stats");
-const firebaseDb = window.GamesFirebase?.getDb?.() || null;
-const firestoreFieldValue = window.firebase?.firestore?.FieldValue;
 
 const trackGameEvent = (eventType, payload = {}) => {
   window.GamesFirebase?.trackEvent?.("TuPrefere", eventType, payload);
@@ -334,92 +332,21 @@ function renderModeCards() {
   });
 }
 
-function modeStatsRef(modeKey) {
-  if (!firebaseDb || !modeKey) {
-    return null;
-  }
-  return firebaseDb.collection("TuPrefere").doc("stats").collection("modeStarts").doc(modeKey);
-}
-
 function setModeCountUI(modeKey, count) {
   const node = modeChoicesContainer?.querySelector(`[data-mode-count="${modeKey}"]`);
-  if (!node) {
-    return;
-  }
+  if (!node) return;
   node.textContent = `${formatCount(count)} fois`;
 }
 
 async function loadModeStartTotals() {
-  const modeKeys = Object.keys(MODE_DEFINITIONS);
-  if (!modeKeys.length) {
-    return;
-  }
-
-  if (!firebaseDb) {
-    modeKeys.forEach((modeKey) => {
-      state.modeStarts[modeKey] = 0;
-      setModeCountUI(modeKey, 0);
-    });
-    return;
-  }
-
-  await Promise.all(
-    modeKeys.map(async (modeKey) => {
-      const ref = modeStatsRef(modeKey);
-      if (!ref) {
-        state.modeStarts[modeKey] = 0;
-        setModeCountUI(modeKey, 0);
-        return;
-      }
-
-      try {
-        const snapshot = await ref.get();
-        const totalStarts = snapshot.exists ? Number(snapshot.data()?.totalStarts) || 0 : 0;
-        state.modeStarts[modeKey] = totalStarts;
-        setModeCountUI(modeKey, totalStarts);
-      } catch (error) {
-        console.warn("[TuPrefere] Impossible de charger le compteur de mode:", error?.message || error);
-        state.modeStarts[modeKey] = 0;
-        setModeCountUI(modeKey, 0);
-      }
-    })
-  );
+  Object.keys(MODE_DEFINITIONS).forEach((modeKey) => {
+    state.modeStarts[modeKey] = 0;
+    setModeCountUI(modeKey, 0);
+  });
 }
 
 async function registerModeStart(modeKey) {
-  const ref = modeStatsRef(modeKey);
-  if (!ref || !modeKey) {
-    return;
-  }
-
-  try {
-    const nextTotal = await firebaseDb.runTransaction(async (transaction) => {
-      const snapshot = await transaction.get(ref);
-      const data = snapshot.exists ? snapshot.data() || {} : {};
-      const currentTotal = Number(data.totalStarts) || 0;
-      const totalStarts = currentTotal + 1;
-
-      transaction.set(
-        ref,
-        {
-          modeKey,
-          label: MODE_DEFINITIONS[modeKey]?.label || modeKey,
-          totalStarts,
-          updatedAt: firestoreFieldValue?.serverTimestamp
-            ? firestoreFieldValue.serverTimestamp()
-            : new Date().toISOString(),
-        },
-        { merge: true }
-      );
-
-      return totalStarts;
-    });
-
-    state.modeStarts[modeKey] = nextTotal;
-    setModeCountUI(modeKey, nextTotal);
-  } catch (error) {
-    console.warn("[TuPrefere] Impossible d'incrémenter le compteur de mode:", error?.message || error);
-  }
+  window.GamesFirebase?.trackEvent?.("TuPrefere", "mode_start", { modeKey });
 }
 
 function lockGlobalStatsUI() {
@@ -450,27 +377,16 @@ function updateGlobalStatsUI(aCount = 0, bCount = 0) {
   triggerStatsReveal();
 }
 
-function dilemmaStatsRef(dilemma) {
-  if (!firebaseDb || !dilemma?.id) {
-    return null;
-  }
-  return firebaseDb.collection("TuPrefere").doc("stats").collection("dilemmaStats").doc(dilemma.id);
-}
-
 async function loadGlobalStatsForCurrentDilemma() {
   const dilemma = currentDilemma();
-  const ref = dilemmaStatsRef(dilemma);
-  if (!ref) {
+  if (!dilemma?.id) {
     updateGlobalStatsUI(0, 0);
     return;
   }
 
   try {
-    const snapshot = await ref.get();
-    const data = snapshot.exists ? snapshot.data() || {} : {};
-    const aCount = Number(data.aCount) || 0;
-    const bCount = Number(data.bCount) || 0;
-    updateGlobalStatsUI(aCount, bCount);
+    const counts = await window.GamesAPI.getTuPrefereCounts(dilemma.id);
+    updateGlobalStatsUI(counts.A || 0, counts.B || 0);
   } catch (error) {
     console.warn("[TuPrefere] Impossible de charger les stats globales:", error?.message || error);
     updateGlobalStatsUI(0, 0);
@@ -478,53 +394,12 @@ async function loadGlobalStatsForCurrentDilemma() {
 }
 
 async function submitGlobalVote(dilemma, choice) {
-  const ref = dilemmaStatsRef(dilemma);
-  if (!ref || !choice || (choice !== "a" && choice !== "b")) {
-    return;
-  }
+  if (!dilemma?.id || !choice || (choice !== "a" && choice !== "b")) return;
 
   try {
-    const increment = firestoreFieldValue?.increment;
-    const timestamp = firestoreFieldValue?.serverTimestamp;
-
-    if (increment && timestamp) {
-      await ref.set(
-        {
-          category: dilemma.category,
-          question: dilemma.question,
-          aLabel: dilemma.a,
-          bLabel: dilemma.b,
-          aCount: choice === "a" ? increment(1) : increment(0),
-          bCount: choice === "b" ? increment(1) : increment(0),
-          total: increment(1),
-          updatedAt: timestamp(),
-        },
-        { merge: true }
-      );
-    } else {
-      await firebaseDb.runTransaction(async (transaction) => {
-        const snap = await transaction.get(ref);
-        const data = snap.exists ? snap.data() || {} : {};
-        const currentA = Number(data.aCount) || 0;
-        const currentB = Number(data.bCount) || 0;
-        const nextA = choice === "a" ? currentA + 1 : currentA;
-        const nextB = choice === "b" ? currentB + 1 : currentB;
-
-        transaction.set(
-          ref,
-          {
-            category: dilemma.category,
-            question: dilemma.question,
-            aLabel: dilemma.a,
-            bLabel: dilemma.b,
-            aCount: nextA,
-            bCount: nextB,
-            total: nextA + nextB,
-            updatedAt: new Date().toISOString(),
-          },
-          { merge: true }
-        );
-      });
+    const result = await window.GamesAPI.recordTuPrefereVote(dilemma.id, choice);
+    if (result?.counts) {
+      updateGlobalStatsUI(result.counts.A || 0, result.counts.B || 0);
     }
   } catch (error) {
     console.warn("[TuPrefere] Impossible d'enregistrer le vote global:", error?.message || error);
