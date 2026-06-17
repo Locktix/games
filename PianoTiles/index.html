@@ -8,34 +8,56 @@
     <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../shared.css" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="app">
-      <header class="hero">
-        <p class="kicker">Nouveau jeu</p>
-        <h1>Piano Tiles</h1>
-        <p class="subtitle">Tape uniquement les tuiles noires avant qu’elles ne passent la ligne rouge.</p>
-      </header>
+    <div class="noise" aria-hidden="true"></div>
 
-      <section class="panel topbar">
+    <main class="app">
+
+      <div class="page-header">
+        <a href="../" class="back-link">← Hub</a>
+        <span class="game-badge">JEU 06</span>
+      </div>
+
+      <div class="hero-wrap">
+        <h1 class="hero-title">
+          <span class="title-solid">PIANO</span>
+          <span class="title-stroke">TILES</span>
+        </h1>
+        <p class="hero-sub">Tape uniquement les tuiles noires avant qu'elles ne passent la ligne.</p>
+      </div>
+
+      <!-- ── Stats + Input ── -->
+      <section class="topbar">
         <label class="field" for="player-name">
-          <span>Ton pseudo (optionnel)</span>
-          <input id="player-name" type="text" maxlength="20" placeholder="Ex: Alan" />
+          <span class="field-label">Pseudo</span>
+          <input id="player-name" type="text" maxlength="20" placeholder="Ton prénom" />
         </label>
         <div class="stats" aria-live="polite">
-          <p>Score: <strong id="score-value">0</strong></p>
-          <p>Best local: <strong id="best-value">0</strong></p>
-          <p>Vitesse: <strong id="speed-value">1.00x</strong></p>
-          <p>Combo: <strong id="combo-value">0</strong></p>
+          <div class="stat-block">
+            <span class="stat-label">Score</span>
+            <strong id="score-value" class="stat-val">0</strong>
+          </div>
+          <div class="stat-block">
+            <span class="stat-label">Best</span>
+            <strong id="best-value" class="stat-val">0</strong>
+          </div>
+          <div class="stat-block">
+            <span class="stat-label">Vitesse</span>
+            <strong id="speed-value" class="stat-val">1.00x</strong>
+          </div>
+          <div class="stat-block">
+            <span class="stat-label">Combo</span>
+            <strong id="combo-value" class="stat-val accent">0</strong>
+          </div>
         </div>
       </section>
 
-      <section class="panel game-panel">
+      <!-- ── Game Board ── -->
+      <section class="game-panel">
         <div id="board" class="board" aria-label="Plateau Piano Tiles" role="button" tabindex="0">
           <div class="lane-grid" aria-hidden="true">
             <span></span><span></span><span></span><span></span>
@@ -45,23 +67,26 @@
           <div id="judgement-feedback" class="judgement-feedback" aria-live="polite"></div>
 
           <div id="overlay" class="overlay">
+            <p class="overlay-kicker">Piano Tiles</p>
             <h2 id="overlay-title">Prêt ?</h2>
-            <p id="overlay-text">Clique sur Démarrer puis tape les colonnes 1-2-3-4 ou directement à l’écran.</p>
-            <button id="start-btn" class="btn btn-primary" type="button">Démarrer</button>
+            <p id="overlay-text">Clique sur Démarrer puis tape les colonnes 1-2-3-4 ou directement à l'écran.</p>
+            <button id="start-btn" class="btn-start" type="button">Démarrer</button>
           </div>
         </div>
       </section>
 
-      <section class="panel">
+      <!-- ── Leaderboard ── -->
+      <section class="leaderboard-panel">
         <div class="leaderboard-head">
-          <h2>Top global (Firebase)</h2>
-          <button id="refresh-top-btn" class="btn btn-ghost" type="button">Rafraîchir</button>
+          <span class="field-label">Top global</span>
+          <button id="refresh-top-btn" class="btn-refresh" type="button">Rafraîchir</button>
         </div>
         <ol id="leaderboard-list" class="leaderboard-list">
           <li>Aucune donnée pour le moment.</li>
         </ol>
-        <p id="status" class="status">Prêt.</p>
+        <p id="status" class="status-text">Prêt.</p>
       </section>
+
     </main>
 
     <script src="../api-shared.js"></script>

@@ -1,15 +1,61 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RPG Beta</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+    <!-- Floating back link -->
+    <a href="../" class="back-link" aria-label="Retour au hub">← Hub</a>
+
+    <!-- Loading screen — hidden once canvas appears -->
+    <div id="rpg-loading" class="rpg-loading" aria-live="polite">
+        <div class="loading-noise" aria-hidden="true"></div>
+        <div class="loading-inner">
+            <p class="loading-badge">JEU 08</p>
+            <h1 class="loading-title">
+                <span class="title-solid">RPG</span>
+                <span class="title-stroke">BETA</span>
+            </h1>
+            <p class="loading-sub">Chargement du moteur…</p>
+            <div class="loading-bar-wrap" aria-hidden="true">
+                <div class="loading-bar"></div>
+            </div>
+        </div>
+    </div>
+
     <div id="game-container"></div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
     <script src="../api-shared.js"></script>
     <script src="script.js"></script>
+
+    <script>
+        // Hide loading screen once Phaser creates the canvas
+        const observer = new MutationObserver(() => {
+            if (document.querySelector('#game-container canvas')) {
+                const loading = document.getElementById('rpg-loading');
+                if (loading) {
+                    loading.classList.add('is-gone');
+                    setTimeout(() => loading.remove(), 600);
+                }
+                observer.disconnect();
+            }
+        });
+        observer.observe(document.getElementById('game-container'), { childList: true });
+
+        // Fallback: hide after 6s regardless
+        setTimeout(() => {
+            const loading = document.getElementById('rpg-loading');
+            if (loading) { loading.classList.add('is-gone'); setTimeout(() => loading.remove(), 600); }
+        }, 6000);
+    </script>
 </body>
 </html>

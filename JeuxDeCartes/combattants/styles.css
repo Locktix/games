@@ -1,96 +1,312 @@
+/*
+  Combattants — La Bataille
+  Design: Industrial Neon Dossier (hub-matched)
+  Accent: #5eead4 (teal)
+  Gold:   #fcd34d (batailles / wins)
+*/
+
 :root {
-  --bg-dark: #0f111a;
-  --bg-panel: rgba(255, 255, 255, 0.05);
-  --border-panel: rgba(255, 255, 255, 0.1);
-  --accent: #7c5cff;
-  --accent-alt: #06b6d4;
-  --text: #f4f7ff;
-  --muted: #b7c0dd;
-  --card-width: 100px;
-  --card-height: 150px;
-  --gold: #ffd700;
+  --bg:        #060709;
+  --surface:   #0c0e12;
+  --surface-2: #111419;
+  --border:    #1c1f26;
+  --text:      #eef0f5;
+  --muted:     #5a6172;
+  --muted-2:   #8892a4;
+  --accent:    #5eead4;
+  --gold:      #fcd34d;
+  --red:       #fb7185;
+  --radius:    6px;
+  --card-w:    90px;
+  --card-h:    130px;
 }
 
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; }
+
 body {
-  background: radial-gradient(circle at top left, #1e1b4b, #0f172a, var(--bg-dark));
+  font-family: "Syne", system-ui, sans-serif;
+  background: var(--bg);
   color: var(--text);
+  height: 100dvh;
   overflow: hidden;
-  height: 100vh;
   display: flex;
   justify-content: center;
+  -webkit-font-smoothing: antialiased;
+}
+
+.noise {
+  position: fixed; inset: 0; z-index: 200; pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E") repeat;
+  mix-blend-mode: overlay;
 }
 
 .app {
+  position: relative; z-index: 1;
   width: min(100%, 800px);
-  padding: 16px;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
+  padding: 0 1rem;
 }
 
+/* ── Screens ── */
 .screen {
   display: none;
   flex-direction: column;
-  gap: 20px;
-  animation: fadeIn 0.4s ease-out;
+  flex: 1;
+  animation: screen-in 300ms ease-out both;
+}
+.screen.active { display: flex; }
+
+@keyframes screen-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.screen.active {
+/* ─────────────────────────────────────
+   MENU SCREEN
+───────────────────────────────────── */
+.menu-inner {
   display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: clamp(1.5rem, 4vw, 2.5rem) 0 2rem;
+  overflow-y: auto;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-/* Headers */
-.hero { text-align: center; margin-bottom: 20px; }
-.hero h1 { font-family: 'Cinzel', serif; font-size: 3rem; margin: 0; background: linear-gradient(to bottom, #fff, #a5b4fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.kicker { text-transform: uppercase; letter-spacing: 0.2em; font-weight: 800; color: var(--accent); font-size: 0.8rem; margin: 0; }
-.subtitle { color: var(--muted); }
+.back-link {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted-2);
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+.back-link:hover { color: var(--accent); }
 
-/* Panels */
-.panel {
-  background: var(--bg-panel);
-  border: 1px solid var(--border-panel);
-  border-radius: 24px;
-  padding: 24px;
-  backdrop-filter: blur(10px);
+.game-badge {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  padding: 0.25rem 0.58rem;
+  border-radius: 3px;
 }
 
-.mode-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.hero-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.hero-title {
+  font-family: "Bebas Neue", sans-serif;
+  font-weight: 400;
+  font-size: clamp(4rem, 18vw, 8rem);
+  line-height: 0.88;
+  letter-spacing: 0.015em;
+  display: flex;
+  flex-direction: column;
+}
+.title-solid { color: var(--text); }
+.title-stroke {
+  color: transparent;
+  -webkit-text-stroke: 2px color-mix(in srgb, var(--text) 28%, transparent);
+}
+.hero-sub { color: var(--muted-2); font-size: 0.88rem; line-height: 1.6; }
+
+/* Mode cards */
+.mode-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
 .mode-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border-panel);
-  border-radius: 20px;
-  padding: 20px;
-  text-align: left;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1.1rem;
+  background: var(--surface);
+  border: none;
   cursor: pointer;
-  transition: all 0.3s;
-  color: inherit;
+  text-align: left;
+  transition: background 180ms ease;
+  overflow: hidden;
 }
-.mode-card:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--accent);
-  transform: translateY(-4px);
+.mode-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
-.mode-card-title { font-weight: 800; font-size: 1.2rem; display: block; margin-bottom: 4px; }
-.mode-card-text { font-size: 0.9rem; color: var(--muted); margin: 0; }
+.mode-card:hover:not(.is-disabled)::before { transform: scaleX(1); }
+.mode-card:hover:not(.is-disabled) { background: var(--surface-2); }
+.mode-card:active:not(.is-disabled) { transform: scale(0.99); }
+.mode-card.is-disabled { opacity: 0.4; cursor: not-allowed; }
 
-.difficulty-pill, .beta-tag {
-  font-size: 0.7rem; font-weight: 800; padding: 2px 8px; border-radius: 99px; text-transform: uppercase;
+.mode-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1;
 }
-.difficulty-pill { background: rgba(6, 182, 212, 0.2); border: 1px solid rgba(6, 182, 212, 0.4); color: #06b6d4; }
-.beta-tag { background: rgba(255, 113, 152, 0.2); border: 1px solid rgba(255, 113, 152, 0.4); color: #ff7198; }
+.mode-card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.mode-card-title {
+  font-family: "Syne", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.mode-card-text { font-size: 0.75rem; color: var(--muted-2); line-height: 1.4; }
+.mode-card-arrow { color: var(--muted); font-size: 0.9rem; flex-shrink: 0; margin-top: 2px; transition: transform 200ms ease, color 200ms ease; }
+.mode-card:hover:not(.is-disabled) .mode-card-arrow { transform: translate(2px, -2px); color: var(--accent); }
 
-/* Battlefield */
-#game-screen { height: 100%; justify-content: space-between; }
+.difficulty-pill {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.58rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  padding: 0.18rem 0.45rem;
+  border-radius: 3px;
+}
+
+.beta-tag {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.58rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted-2);
+  background: color-mix(in srgb, var(--muted) 8%, transparent);
+  border: 1px solid var(--border);
+  padding: 0.18rem 0.45rem;
+  border-radius: 3px;
+}
+
+/* Rules */
+.rules-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.rules-title {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+.guide-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.guide-list li {
+  font-size: 0.8rem;
+  color: var(--muted-2);
+  line-height: 1.5;
+  padding-left: 1rem;
+  position: relative;
+}
+.guide-list li::before { content: "·"; position: absolute; left: 0.2rem; color: var(--accent); font-weight: 700; }
+.guide-list li strong { color: var(--text); font-weight: 800; }
+
+/* ─────────────────────────────────────
+   GAME SCREEN
+───────────────────────────────────── */
+#game-screen {
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  gap: 0;
+}
 
 .game-header {
-  display: flex; justify-content: space-between; align-items: center; padding: 10px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0 0.75rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
-.btn-icon { background: none; border: 1px solid var(--border-panel); border-radius: 12px; color: var(--text); padding: 8px 16px; cursor: pointer; }
 
+.btn-icon {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--muted-2);
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.8rem;
+  transition: background 150ms ease, color 150ms ease;
+}
+.btn-icon:hover { background: var(--surface-2); color: var(--text); }
+
+.game-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.game-status {
+  font-family: "Syne", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.timer {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.7rem;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+}
+
+.turn-count {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72rem;
+  color: var(--muted-2);
+  letter-spacing: 0.06em;
+}
+
+/* Battlefield */
 .battlefield {
   flex: 1;
   display: flex;
@@ -98,38 +314,60 @@ body {
   justify-content: space-around;
   align-items: center;
   position: relative;
+  padding: 0.5rem 0;
 }
 
 .player-zone {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
 }
 
 .deck-info {
   display: flex;
-  gap: 12px;
   align-items: center;
+  gap: 0.75rem;
 }
-.name { font-weight: 700; font-size: 1.1rem; }
-.card-count { background: var(--bg-panel); padding: 4px 12px; border-radius: 12px; font-weight: 800; color: var(--accent-alt); }
+
+.player-name {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted-2);
+}
+
+.card-count {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  min-width: 2.5rem;
+  text-align: center;
+}
 
 .card-slot {
-  width: var(--card-width);
-  height: var(--card-height);
-  border: 2px dashed var(--border-panel);
-  border-radius: 12px;
+  width: var(--card-w);
+  height: var(--card-h);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
+/* Table zone */
 .table-zone {
   width: 100%;
-  height: 180px;
+  height: 160px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -137,156 +375,275 @@ body {
   perspective: 1000px;
 }
 
-/* Playing Card Visuals */
-.playing-card {
-  width: var(--card-width);
-  height: var(--card-height);
-  background: white;
-  border-radius: 10px;
+/* BATAILLE animation via ::after */
+.table-zone.bataille-active::after {
+  content: 'BATAILLE !';
   position: absolute;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(2rem, 8vw, 3.5rem);
+  color: var(--red);
+  text-shadow: 0 0 24px color-mix(in srgb, var(--red) 60%, transparent);
+  z-index: 10;
+  pointer-events: none;
+  animation: bataille-pulse 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes bataille-pulse {
+  from { transform: scale(1);    opacity: 0.85; }
+  to   { transform: scale(1.08); opacity: 1; }
+}
+
+/* Win overlay */
+.win-overlay {
+  position: absolute;
+  pointer-events: none;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(3rem, 12vw, 5rem);
+  letter-spacing: 0.04em;
+  color: var(--gold);
+  text-shadow: 0 0 30px color-mix(in srgb, var(--gold) 55%, transparent);
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 400ms ease, transform 400ms cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 20;
+}
+.win-overlay.active {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* ── Playing Cards ── */
+.playing-card {
+  width: var(--card-w);
+  height: var(--card-h);
+  background: #fafaf9;
+  border-radius: 8px;
+  position: absolute;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55), 0 2px 4px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 8px;
+  padding: 6px;
   color: #1a1a1a;
-  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), left 0.4s, top 0.4s, opacity 0.3s;
+  transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1), left 0.35s, top 0.35s, opacity 0.25s;
   backface-visibility: hidden;
   user-select: none;
 }
+.playing-card.red { color: #dc2626; }
 
-.playing-card.red { color: #e11d48; }
-.playing-card .card-value { font-weight: 900; font-size: 1.4rem; line-height: 1; }
-.playing-card .card-suit { font-size: 1.8rem; text-align: center; flex: 1; display: flex; align-items: center; justify-content: center; }
-.playing-card .card-bottom { transform: rotate(180deg); }
-
-.deck-visual {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #312e81, #1e1b4b);
-  border: 3px solid white;
-  border-radius: 10px;
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
-  position: relative;
-}
-.deck-visual::after {
-  content: '';
-  position: absolute;
-  top: 10%; left: 10%; right: 10%; bottom: 10%;
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 4px;
-}
-
-.playing-card.flipped {
-  animation: flipIn 0.4s ease-out forwards;
-}
-
-@keyframes flipIn {
-  from { transform: rotateY(180deg) scale(0.8); opacity: 0; }
-  to { transform: rotateY(0deg) scale(1); opacity: 1; }
-}
-
-/* Info & Timer */
-.game-info {
+.playing-card .card-top,
+.playing-card .card-bottom {
   display: flex;
-  flex-direction: column;
   align-items: center;
   gap: 2px;
 }
+.playing-card .card-bottom { transform: rotate(180deg); }
+.playing-card .card-value { font-family: "Syne", sans-serif; font-weight: 900; font-size: 1.15rem; line-height: 1; }
+.playing-card .card-suit-small { font-size: 0.7rem; }
+.playing-card .card-suit { font-size: 1.6rem; text-align: center; flex: 1; display: flex; align-items: center; justify-content: center; }
 
-.timer {
-  font-family: monospace;
-  font-size: 0.9rem;
-  color: var(--accent-alt);
-  background: rgba(0, 0, 0, 0.2);
-  padding: 2px 8px;
-  border-radius: 6px;
+.playing-card.flipped {
+  animation: flip-in 0.35s ease-out forwards;
 }
 
-/* Controls */
+@keyframes flip-in {
+  from { transform: rotateY(90deg) scale(0.85); opacity: 0; }
+  to   { transform: rotateY(0deg)  scale(1);    opacity: 1; }
+}
+
+/* Card back */
+.deck-visual {
+  width: 100%; height: 100%;
+  background: linear-gradient(135deg, #0c0e12 0%, #111419 100%);
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+.deck-visual::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: 4px;
+}
+.deck-visual::after {
+  content: "♠";
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.8rem;
+  color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+/* ── Controls ── */
 .game-controls {
-  display: flex; gap: 12px; padding: 20px 0; align-items: stretch;
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  padding: 0.75rem 0 0.5rem;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .speed-controls {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
+  flex-shrink: 0;
 }
 
 .speed-btn {
-  background: var(--bg-panel);
-  border: 1px solid var(--border-panel);
+  background: var(--surface);
+  border: 1px solid var(--border);
   color: var(--muted);
-  font-size: 0.75rem;
-  font-weight: 800;
-  padding: 4px 8px;
-  border-radius: 8px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.62rem;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 3px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 }
-
+.speed-btn:hover { color: var(--text); }
 .speed-btn.active {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.btn-primary {
+  flex: 2;
+  padding: 0.85rem 1rem;
   background: var(--accent);
-  color: white;
-  border-color: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: var(--radius);
+  font-family: "Syne", sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+.btn-primary:hover { opacity: 0.88; }
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+.btn-ghost {
+  flex: 1;
+  padding: 0.85rem 0.75rem;
+  background: var(--surface);
+  color: var(--muted-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: "Syne", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+.btn-ghost:hover { background: var(--surface-2); color: var(--text); }
+.btn-ghost:active { transform: scale(0.98); }
+.btn-ghost:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* ─────────────────────────────────────
+   END SCREEN
+───────────────────────────────────── */
+#end-screen {
+  justify-content: center;
+  align-items: center;
 }
 
-.btn { border: none; border-radius: 16px; padding: 16px 24px; font-weight: 800; cursor: pointer; flex: 1; transition: transform 0.2s, opacity 0.2s; font-size: 1rem; }
-.btn-primary { background: linear-gradient(135deg, var(--accent), #4f46e5); color: white; box-shadow: 0 10px 20px rgba(124, 92, 255, 0.3); }
-.btn-ghost { background: var(--bg-panel); border: 1px solid var(--border-panel); color: var(--text); }
-.btn:active { transform: scale(0.98); }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-/* End Screen */
-.result-panel { text-align: center; }
-.result-panel h1 { font-family: 'Cinzel', serif; font-size: 3.5rem; margin-bottom: 10px; }
-.stats-row { display: flex; justify-content: center; gap: 40px; margin: 30px 0; }
-.stat-item { display: flex; flex-direction: column; }
-.stat-val { font-size: 2rem; font-weight: 800; color: var(--accent-alt); }
-.stat-label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; }
-
-/* Battle animation */
-.table-zone.bataille-active::after {
-  content: 'BATAILLE !';
-  position: absolute;
-  font-family: 'Cinzel', serif;
-  font-size: 2.5rem;
-  font-weight: 900;
-  color: #ff4757;
-  text-shadow: 0 0 20px rgba(255, 71, 87, 0.6);
-  z-index: 10;
-  animation: pulse 1s infinite alternate;
-  pointer-events: none;
+.result-panel {
+  width: min(100%, 480px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--gold);
+  border-radius: var(--radius);
+  padding: 2rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  text-align: center;
+  animation: screen-in 300ms ease-out both;
 }
 
-@keyframes pulse {
-  from { transform: scale(1); opacity: 0.8; }
-  to { transform: scale(1.1); opacity: 1; }
-}
-
-.win-overlay {
-  position: absolute;
-  pointer-events: none;
-  font-family: 'Cinzel', serif;
-  font-size: 4rem;
-  font-weight: 900;
+.end-title {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(3rem, 12vw, 5rem);
+  line-height: 1;
   color: var(--gold);
-  text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-  opacity: 0;
-  transform: scale(0.5);
-  transition: all 0.5s;
-  z-index: 20;
-}
-.win-overlay.active {
-  opacity: 1;
-  transform: scale(1.2);
+  text-shadow: 0 0 30px color-mix(in srgb, var(--gold) 40%, transparent);
+  letter-spacing: 0.02em;
 }
 
+.end-msg {
+  font-size: 0.9rem;
+  color: var(--muted-2);
+  line-height: 1.5;
+}
+
+.stats-row {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.stat-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 1rem 0.5rem;
+  border-right: 1px solid var(--border);
+}
+.stat-item:last-child { border-right: none; }
+
+.stat-val {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.stat-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.game-actions {
+  display: flex;
+  gap: 8px;
+}
+.game-actions .btn-primary { flex: 1; }
+.game-actions .btn-ghost { flex: 1; }
+
+/* ── Responsive ── */
 @media (max-width: 500px) {
-  .hero h1 { font-size: 2.2rem; }
+  :root { --card-w: 68px; --card-h: 100px; }
   .mode-grid { grid-template-columns: 1fr; }
-  :root { --card-width: 70px; --card-height: 105px; }
-  .win-overlay { font-size: 2.5rem; }
-  .table-zone.bataille-active::after { font-size: 1.8rem; }
+  .table-zone { height: 130px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen { animation: none; }
+  .playing-card, .win-overlay { transition: none; }
+  .playing-card.flipped { animation: none; opacity: 1; transform: none; }
+  .table-zone.bataille-active::after { animation: none; }
 }

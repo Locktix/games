@@ -3,73 +3,59 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Jeux de Cartes - Hub</title>
+    <title>Jeux de Cartes</title>
+    <meta name="description" content="Collection de jeux de cartes classiques revisités pour le web." />
     <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="../shared.css" />
-    <link rel="stylesheet" href="../styles.css" />
-    <style>
-      body {
-        background: radial-gradient(1200px 600px at 80% -10%, #2a203a 0%, #0f1115 55%);
-      }
-      .game-card {
-        background: linear-gradient(160deg, #1a1f2e 10%, #0d121a 100%);
-        border-color: #30384a;
-      }
-      .badge {
-        background-color: rgba(162, 142, 255, 0.18);
-        border: 1px solid rgba(162, 142, 255, 0.35);
-        color: #d6c8ff;
-      }
-      .back-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--muted);
-        text-decoration: none;
-        font-weight: 500;
-        margin-bottom: 2rem;
-        transition: color 0.2s;
-      }
-      .back-link:hover {
-        color: var(--accent);
-      }
-    </style>
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="container">
-      <a href="../index.html" class="back-link">
-        <span>←</span> Retour au Hub
-      </a>
-      
-      <header class="hero">
-        <p class="overline">Collection</p>
-        <h1>Jeux de Cartes</h1>
-        <p class="subtitle">Les grands classiques, revisités pour le web.</p>
+    <div class="noise" aria-hidden="true"></div>
+
+    <main class="hub">
+      <div class="page-header">
+        <a href="../" class="back-link">← Hub</a>
+        <span class="game-badge">JEU 09</span>
+      </div>
+
+      <header class="hero-wrap">
+        <h1 class="hero-title">
+          <span class="title-solid">JEUX DE</span>
+          <span class="title-stroke">CARTES</span>
+        </h1>
+        <p class="hero-sub">Les grands classiques, revisités pour le web.</p>
       </header>
 
-      <section class="games" id="games-list" aria-label="Liste des jeux de cartes" aria-busy="true">
+      <section class="games-grid" id="games-list" aria-label="Liste des jeux de cartes" aria-busy="true">
         <p id="games-status" class="games-status">Chargement de la collection…</p>
       </section>
 
       <template id="game-card-template">
         <a class="game-card" rel="noopener noreferrer">
-          <div class="game-content">
+          <div class="card-glow" aria-hidden="true"></div>
+          <header class="card-top">
             <span class="badge"></span>
-            <h2></h2>
-            <p></p>
+            <span class="arrow" aria-hidden="true">↗</span>
+          </header>
+          <div class="card-body">
+            <h2 class="card-title"></h2>
+            <p class="card-desc"></p>
           </div>
-          <span class="arrow" aria-hidden="true">→</span>
+          <span class="card-num" aria-hidden="true"></span>
         </a>
       </template>
+
+      <footer class="hub-footer">
+        <span>← <a href="../" class="footer-link">Retour au hub principal</a></span>
+      </footer>
     </main>
 
     <script>
+      const CARD_COLORS = ["#5eead4", "#818cf8", "#fdba74", "#bef264"];
+
       (async function renderGames() {
         const list = document.getElementById("games-list");
         const template = document.getElementById("game-card-template");
@@ -77,24 +63,31 @@
 
         try {
           const response = await fetch("./cards-games.json", { cache: "no-cache" });
-          if (!response.ok) {
-            throw new Error("HTTP " + response.status);
-          }
+          if (!response.ok) throw new Error("HTTP " + response.status);
 
           const games = await response.json();
           const fragment = document.createDocumentFragment();
-          games.forEach((game) => {
+
+          games.forEach((game, index) => {
             const node = template.content.firstElementChild.cloneNode(true);
+            const accent = CARD_COLORS[index % CARD_COLORS.length];
+            const num = String(index + 1).padStart(2, "0");
+
             node.href = game.href;
+            node.setAttribute("aria-label", `Lancer ${game.title}`);
+            node.style.setProperty("--accent", accent);
+
             if (game.href === "#") {
-              node.style.opacity = "0.6";
-              node.style.cursor = "not-allowed";
+              node.classList.add("is-disabled");
               node.onclick = (e) => e.preventDefault();
             }
-            node.setAttribute("aria-label", `Lancer ${game.title}`);
+
             node.querySelector(".badge").textContent = game.badge;
             node.querySelector("h2").textContent = game.title;
             node.querySelector("p").textContent = game.description;
+            node.querySelector(".card-num").textContent = num;
+            node.style.animationDelay = `${index * 80}ms`;
+
             fragment.appendChild(node);
           });
 
@@ -102,7 +95,7 @@
           list.appendChild(fragment);
           list.setAttribute("aria-busy", "false");
         } catch (error) {
-          console.error("[CardHub] Error:", error);
+          console.error("[CardHub]", error);
           if (status) {
             status.textContent = "Erreur lors du chargement des jeux.";
             status.classList.add("is-error");

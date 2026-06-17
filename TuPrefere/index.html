@@ -4,59 +4,84 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Tu Préfères ?</title>
-    <meta
-      name="description"
-      content="Jeu Tu Préfères avec dilemmes psychologiques, absurdes et variés."
-    />
+    <meta name="description" content="Dilemmes psychologiques, conneries et choix impossibles." />
     <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../shared.css" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <div class="noise" aria-hidden="true"></div>
+
     <main class="app">
-      <section id="start-menu" class="panel start-menu" aria-label="Choix de version">
-        <p class="kicker">Solo · Local</p>
-        <h1>Tu Préfères ?</h1>
-        <p class="subtitle">Choisis ta version avant de commencer.</p>
+
+      <!-- ══════════════════════════════
+           START MENU
+      ══════════════════════════════ -->
+      <section id="start-menu" class="start-menu" aria-label="Choix de version">
+        <div class="page-header">
+          <a href="../" class="back-link">← Hub</a>
+          <span class="game-badge">JEU 05</span>
+        </div>
+
+        <div class="hero-wrap">
+          <h1 class="hero-title">
+            <span class="title-solid">TU</span>
+            <span class="title-stroke">PRÉFÈRES?</span>
+          </h1>
+          <p class="hero-sub">Dilemmes psychologiques, conneries et choix impossibles.</p>
+        </div>
+
         <div id="mode-choices" class="mode-choices"></div>
       </section>
 
+      <!-- ══════════════════════════════
+           GAME ROOT
+      ══════════════════════════════ -->
       <section id="game-root" class="game-root is-hidden" aria-hidden="true">
-        <header class="hero">
-          <p class="kicker">Solo · Local</p>
-          <h1>Tu Préfères ?</h1>
-          <p class="subtitle">Dilemmes psychologiques, conneries et choix impossibles.</p>
-        </header>
+        <div class="game-inner">
 
-        <section class="panel meta">
-          <div class="meta-left">
-            <span id="mode-badge" class="badge badge-mode">Version normale</span>
-            <span id="category-badge" class="badge">Psychologique</span>
+          <div class="game-top-bar">
+            <div class="game-badges">
+              <span id="mode-badge" class="chip">Version normale</span>
+              <span id="category-badge" class="chip chip-dim">Catégorie</span>
+            </div>
+            <p id="progress-text" class="progress-text">Dilemme 1 / 1</p>
           </div>
-          <p id="progress-text" class="progress">Dilemme 1 / 1</p>
-        </section>
 
-        <section class="panel dilemma-panel" aria-live="polite">
-          <p id="dilemma-text" class="dilemma-text">Chargement...</p>
-          <div id="choices-container" class="choices"></div>
-        </section>
-
-        <section class="panel stats">
-          <p id="result-text" class="result">Choisis une option 👀</p>
-          <div class="stats-grid">
-            <p><strong>Votes globaux:</strong> <span id="global-total-count">0</span></p>
-            <p><strong>A global:</strong> <span id="global-a-stats">0% (0)</span></p>
-            <p><strong>B global:</strong> <span id="global-b-stats">0% (0)</span></p>
+          <div class="dilemma-panel" aria-live="polite">
+            <p id="dilemma-text" class="dilemma-text">Chargement…</p>
+            <div id="choices-container" class="choices-container"></div>
           </div>
-        </section>
 
-        <button id="next-btn" class="btn btn-primary" type="button">Dilemme suivant</button>
+          <div class="stats-section">
+            <p id="result-text" class="result-text">Choisis une option 👀</p>
+            <div class="stats-grid">
+              <div class="stat-row">
+                <span class="stat-key">Votes globaux</span>
+                <span id="global-total-count" class="stat-val">—</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-key">A global</span>
+                <span id="global-a-stats" class="stat-val">Vote pour révéler</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-key">B global</span>
+                <span id="global-b-stats" class="stat-val">Vote pour révéler</span>
+              </div>
+            </div>
+          </div>
+
+          <button id="next-btn" class="btn-next" type="button">
+            <span>Dilemme suivant</span>
+            <span class="btn-arrow" aria-hidden="true">→</span>
+          </button>
+
+        </div>
       </section>
+
     </main>
 
     <script src="../api-shared.js"></script>

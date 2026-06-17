@@ -3,158 +3,204 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>Action Vérité — Solo</title>
-    <meta
-      name="description"
-      content="Jeu Action Vérité solo : ajoute les joueurs, choisis une difficulté et lance la partie."
-    />
+    <title>Action Vérité</title>
+    <meta name="description" content="Jeu Action Vérité — solo local ou multi synchronisé." />
     <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../shared.css" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="app">
-      <section id="mode-screen" class="screen active">
-        <header class="hero">
-          <p class="kicker">Choix du mode</p>
-          <h1>Action Vérité</h1>
-          <p class="subtitle">Choisis comment tu veux jouer : solo local ou multi sur plusieurs téléphones.</p>
-        </header>
+    <div class="noise" aria-hidden="true"></div>
 
-        <article class="panel">
-          <div class="mode-grid" aria-label="Choisir le mode de jeu">
+    <main class="app">
+
+      <!-- ══════════════════════════════
+           MODE SCREEN
+      ══════════════════════════════ -->
+      <section id="mode-screen" class="screen active">
+        <div class="screen-inner">
+          <div class="page-header">
+            <a href="../" class="back-link">← Hub</a>
+            <span class="game-badge">JEU 03</span>
+          </div>
+
+          <div class="hero-wrap">
+            <h1 class="hero-title">
+              <span class="title-solid">ACTION</span>
+              <span class="title-stroke">VÉRITÉ</span>
+            </h1>
+            <p class="hero-sub">Solo local sur un téléphone, ou multi synchronisé.</p>
+          </div>
+
+          <div class="mode-grid">
             <button id="mode-solo-btn" class="mode-card" type="button">
-              <img
-                src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80"
-                alt="Mode solo"
-                loading="lazy"
-              />
-              <span class="mode-card-content">
+              <div class="mode-card-img-wrap">
+                <img
+                  src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80"
+                  alt="Mode solo"
+                  loading="lazy"
+                />
+              </div>
+              <div class="mode-card-body">
                 <span class="mode-card-title">Solo</span>
-                <span class="mode-card-text">1 téléphone, joueurs en local</span>
-              </span>
+                <span class="mode-card-sub">1 téléphone, joueurs en local</span>
+              </div>
+              <span class="mode-card-arrow" aria-hidden="true">↗</span>
             </button>
+
             <button id="mode-multi-btn" class="mode-card" type="button">
-              <img
-                src="https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=900&q=80"
-                alt="Mode multi"
-                loading="lazy"
-              />
-              <span class="mode-card-content">
+              <div class="mode-card-img-wrap">
+                <img
+                  src="https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=900&q=80"
+                  alt="Mode multi"
+                  loading="lazy"
+                />
+              </div>
+              <div class="mode-card-body">
                 <span class="mode-card-title-row">
                   <span class="mode-card-title">Multi</span>
                   <span class="beta-tag">BETA</span>
                 </span>
-                <span class="mode-card-text">Plusieurs téléphones synchronisés</span>
-              </span>
+                <span class="mode-card-sub">Plusieurs téléphones synchronisés</span>
+              </div>
+              <span class="mode-card-arrow" aria-hidden="true">↗</span>
             </button>
           </div>
-        </article>
+        </div>
       </section>
 
+      <!-- ══════════════════════════════
+           SETUP SCREEN
+      ══════════════════════════════ -->
       <section id="setup-screen" class="screen">
-        <header class="hero">
-          <p id="setup-kicker" class="kicker">Mode local</p>
-          <h1>Action Vérité</h1>
-          <p id="setup-subtitle" class="subtitle">Version solo.</p>
-        </header>
-
-        <article id="solo-players-panel" class="panel">
-          <div class="panel-head">
-            <h2>Joueurs</h2>
-            <button id="add-player-btn" class="btn btn-ghost" type="button" aria-label="Ajouter un joueur">+ Ajouter</button>
-          </div>
-          <p class="hint">Aucune limite : ajoute autant de personnes que tu veux.</p>
-          <div id="players-list" class="players-list" aria-label="Liste des joueurs"></div>
-        </article>
-
-        <article class="panel">
-          <h2>Difficulté</h2>
-          <div id="difficulty-grid" class="difficulty-grid" role="radiogroup" aria-label="Choisir la difficulté">
-            <button class="difficulty-btn is-active" data-difficulty="bebe-cadum" type="button">Bébé Cadum</button>
-            <button class="difficulty-btn" data-difficulty="normal" type="button">Normal</button>
-            <button class="difficulty-btn" data-difficulty="spicy" type="button">Spicy</button>
-            <button class="difficulty-btn" data-difficulty="infame" type="button">Infâme</button>
-          </div>
-        </article>
-
-        <article class="panel">
-          <h2>Déroulement</h2>
-          <ul class="guide-list">
-            <li>Le joueur du tour choisit <strong>Action</strong> ou <strong>Vérité</strong>.</li>
-            <li>Si la carte ne convient pas, il peut <strong>Repiocher</strong>.</li>
-            <li>Il valide avec <strong>Action faite</strong> / <strong>Vérité dite</strong>.</li>
-          </ul>
-        </article>
-
-        <article id="multi-panel" class="panel is-hidden">
-          <div class="panel-head">
-            <h2>Salon multijoueur</h2>
-            <span id="multi-role-badge" class="difficulty-pill">Invité</span>
+        <div class="screen-inner">
+          <div class="page-header">
+            <a href="../" class="back-link">← Hub</a>
+            <span class="game-badge">JEU 03</span>
           </div>
 
-          <div class="multi-form-grid">
-            <label class="multi-label" for="multi-name-input">Ton pseudo</label>
-            <input id="multi-name-input" class="player-input" type="text" maxlength="24" placeholder="Ex: Alan" />
-
-            <label class="multi-label" for="room-code-input">Code salon</label>
-            <input id="room-code-input" class="player-input code-input" type="text" maxlength="6" placeholder="ABC123" />
+          <div class="setup-hero">
+            <p id="setup-kicker" class="mono-label">Mode local</p>
+            <h1 class="hero-title compact">
+              <span class="title-solid">ACTION</span>
+              <span class="title-stroke">VÉRITÉ</span>
+            </h1>
+            <p id="setup-subtitle" class="hero-sub">Version solo locale sur un seul téléphone.</p>
           </div>
 
-          <div class="card-actions">
-            <button id="create-room-btn" class="btn btn-secondary" type="button">Créer salon</button>
-            <button id="join-room-btn" class="btn btn-secondary" type="button">Rejoindre</button>
+          <!-- Solo players -->
+          <article id="solo-players-panel" class="panel">
+            <div class="panel-head">
+              <h2 class="panel-title">Joueurs</h2>
+              <button id="add-player-btn" class="btn-ghost-sm" type="button">+ Ajouter</button>
+            </div>
+            <p class="panel-hint">Aucune limite : ajoute autant de personnes que tu veux.</p>
+            <div id="players-list" class="players-list" aria-label="Liste des joueurs"></div>
+          </article>
+
+          <!-- Difficulty -->
+          <article class="panel">
+            <h2 class="panel-title">Difficulté</h2>
+            <div id="difficulty-grid" class="difficulty-grid" role="radiogroup" aria-label="Choisir la difficulté">
+              <button class="difficulty-btn is-active" data-difficulty="bebe-cadum" type="button">Bébé Cadum</button>
+              <button class="difficulty-btn" data-difficulty="normal" type="button">Normal</button>
+              <button class="difficulty-btn" data-difficulty="spicy" type="button">Spicy 🌶</button>
+              <button class="difficulty-btn" data-difficulty="infame" type="button">Infâme 💀</button>
+            </div>
+          </article>
+
+          <!-- How to play -->
+          <article class="panel panel-guide">
+            <h2 class="panel-title">Déroulement</h2>
+            <ul class="guide-list">
+              <li>Le joueur du tour choisit <strong>Action</strong> ou <strong>Vérité</strong>.</li>
+              <li>Si la carte ne convient pas, il peut <strong>Repiocher</strong>.</li>
+              <li>Il valide avec <strong>Action faite</strong> / <strong>Vérité dite</strong>.</li>
+            </ul>
+          </article>
+
+          <!-- Multi panel -->
+          <article id="multi-panel" class="panel is-hidden">
+            <div class="panel-head">
+              <h2 class="panel-title">Salon multijoueur</h2>
+              <span id="multi-role-badge" class="role-badge">Invité</span>
+            </div>
+
+            <div class="multi-form">
+              <label class="field-wrap">
+                <span class="field-label" for="multi-name-input">Pseudo</span>
+                <input id="multi-name-input" class="player-input" type="text" maxlength="24" placeholder="Ex: Alan" />
+              </label>
+              <label class="field-wrap">
+                <span class="field-label" for="room-code-input">Code salon</span>
+                <input id="room-code-input" class="player-input code-input" type="text" maxlength="6" placeholder="ABC123" />
+              </label>
+            </div>
+
+            <div class="card-actions">
+              <button id="create-room-btn" class="btn-secondary" type="button">Créer salon</button>
+              <button id="join-room-btn" class="btn-secondary" type="button">Rejoindre</button>
+            </div>
+
+            <button id="start-multi-btn" class="btn-primary is-hidden" type="button">Lancer la partie multi</button>
+            <p id="room-info" class="panel-hint"></p>
+            <p id="room-players" class="panel-hint"></p>
+          </article>
+
+          <!-- Actions -->
+          <div class="setup-actions">
+            <button id="start-game-btn" class="btn-primary" type="button">Lancer la partie</button>
+            <button id="back-mode-btn" class="btn-ghost" type="button">← Retour au choix</button>
           </div>
-
-          <button id="start-multi-btn" class="btn btn-primary is-hidden" type="button">Lancer la partie multi</button>
-          <p id="room-info" class="hint">Aucun salon actif.</p>
-          <p id="room-players" class="hint">Joueurs: —</p>
-        </article>
-
-        <button id="start-game-btn" class="btn btn-primary" type="button">Lancer la partie</button>
-        <button id="back-mode-btn" class="btn btn-ghost" type="button">Retour au choix du mode</button>
-        <p id="setup-status" class="status" aria-live="polite"></p>
+          <p id="setup-status" class="status-text" aria-live="polite"></p>
+        </div>
       </section>
 
+      <!-- ══════════════════════════════
+           GAME SCREEN
+      ══════════════════════════════ -->
       <section id="game-screen" class="screen">
-        <header class="game-head">
-          <div>
-            <p class="kicker">Tour actuel</p>
-            <h2 id="current-player">Player</h2>
-            <p id="game-room-meta" class="hint is-hidden">Salon: —</p>
+        <div class="screen-inner game-inner">
+
+          <header class="game-head">
+            <div class="game-head-left">
+              <p class="mono-label">Tour actuel</p>
+              <h2 id="current-player" class="player-name">Player</h2>
+              <p id="game-room-meta" class="mono-label is-hidden"></p>
+            </div>
+            <span id="current-difficulty" class="difficulty-pill">Normal</span>
+          </header>
+
+          <article class="card-panel">
+            <p id="card-type" class="card-type-label">ACTION / VÉRITÉ</p>
+            <p id="card-text" class="card-text-content">Choisis Action ou Vérité pour afficher une carte.</p>
+          </article>
+
+          <div class="card-actions" aria-label="Choix du type de carte">
+            <button id="truth-btn" class="btn-choice btn-truth" type="button">Vérité</button>
+            <button id="dare-btn" class="btn-choice btn-dare" type="button">Action</button>
           </div>
-          <span id="current-difficulty" class="difficulty-pill">Normal</span>
-        </header>
 
-        <article class="panel card-panel">
-          <p id="card-type" class="card-type">ACTION / VÉRITÉ</p>
-          <p id="card-text" class="card-text">Choisis Action ou Vérité pour afficher une carte.</p>
-        </article>
+          <div id="turn-actions" class="turn-actions is-hidden">
+            <button id="redraw-btn" class="btn-ghost" type="button">Repiocher</button>
+            <button id="complete-turn-btn" class="btn-primary" type="button">Action faite</button>
+          </div>
 
-        <div class="card-actions" aria-label="Choix du type de carte">
-          <button id="truth-btn" class="btn btn-secondary" type="button">Vérité</button>
-          <button id="dare-btn" class="btn btn-secondary" type="button">Action</button>
+          <div id="end-vote-wrap" class="end-vote is-hidden">
+            <button id="vote-end-btn" class="btn-ghost" type="button">Voter pour finir</button>
+            <p id="vote-status" class="mono-label"></p>
+          </div>
+
+          <p id="game-multi-hint" class="game-hint"></p>
         </div>
-
-        <div id="turn-actions" class="game-actions is-hidden">
-          <button id="redraw-btn" class="btn btn-ghost" type="button">Repiocher</button>
-          <button id="complete-turn-btn" class="btn btn-primary" type="button">Action faite</button>
-        </div>
-
-        <div id="end-vote-wrap" class="game-actions is-hidden">
-          <button id="vote-end-btn" class="btn btn-ghost" type="button">Voter pour finir</button>
-          <p id="vote-status" class="hint">Votes fin: 0/0</p>
-        </div>
-
-        <p id="game-multi-hint" class="hint">En attente du joueur courant.</p>
       </section>
+
     </main>
 
+    <!-- Player row template -->
     <template id="player-row-template">
       <div class="player-row">
         <input class="player-input" type="text" maxlength="24" placeholder="Nom du joueur" />

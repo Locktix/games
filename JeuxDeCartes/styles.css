@@ -1,0 +1,271 @@
+/*
+  Jeux de Cartes — Sub-hub
+  Design: Industrial Neon Dossier (hub-matched)
+  Accent: #5eead4 (teal — Jeu 09)
+*/
+
+:root {
+  --bg:        #060709;
+  --surface:   #0c0e12;
+  --surface-2: #111419;
+  --border:    #1c1f26;
+  --text:      #eef0f5;
+  --muted:     #5a6172;
+  --muted-2:   #8892a4;
+  --accent:    #5eead4;
+  --radius:    6px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Syne", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.noise {
+  position: fixed; inset: 0; z-index: 200; pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E") repeat;
+  mix-blend-mode: overlay;
+}
+
+.hub {
+  position: relative; z-index: 1;
+  width: min(100%, 1120px);
+  margin: 0 auto;
+  padding: clamp(2rem, 6vw, 4rem) clamp(1rem, 4vw, 2.5rem) 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2rem, 5vw, 3.5rem);
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.back-link {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted-2);
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+.back-link:hover { color: var(--accent); }
+
+.game-badge {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  padding: 0.25rem 0.58rem;
+  border-radius: 3px;
+}
+
+.hero-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.hero-title {
+  font-family: "Bebas Neue", sans-serif;
+  font-weight: 400;
+  font-size: clamp(4rem, 12vw, 8rem);
+  line-height: 0.88;
+  letter-spacing: 0.015em;
+  display: flex;
+  flex-direction: column;
+}
+
+.title-solid { color: var(--text); }
+.title-stroke {
+  color: transparent;
+  -webkit-text-stroke: 2px color-mix(in srgb, var(--text) 28%, transparent);
+}
+
+.hero-sub {
+  color: var(--muted-2);
+  font-size: clamp(0.9rem, 2vw, 1.05rem);
+}
+
+/* ── Grid ── */
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.games-status {
+  grid-column: 1 / -1;
+  padding: 3rem 2rem;
+  color: var(--muted);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.82rem;
+  background: var(--surface);
+}
+.games-status.is-error { color: #fb7185; }
+
+/* ── Game cards ── */
+.game-card {
+  --accent: #5eead4;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1.4rem 1.3rem 1.3rem;
+  min-height: 210px;
+  text-decoration: none;
+  color: inherit;
+  background: var(--surface);
+  overflow: hidden;
+  transition: background 220ms ease;
+  animation: card-in 400ms ease-out both;
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.game-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.game-card:hover::before,
+.game-card:focus-visible::before { transform: scaleX(1); }
+
+.card-glow {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 120%, var(--accent), transparent);
+  opacity: 0;
+  transition: opacity 300ms ease;
+  pointer-events: none;
+}
+.game-card:hover .card-glow,
+.game-card:focus-visible .card-glow { opacity: 0.07; }
+.game-card:hover, .game-card:focus-visible { background: var(--surface-2); outline: none; }
+
+.game-card.is-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.badge {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.64rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  padding: 0.22rem 0.5rem;
+  border-radius: 3px;
+}
+
+.arrow {
+  font-size: 1rem;
+  color: var(--muted);
+  transition: transform 200ms ease, color 200ms ease;
+  display: block;
+}
+.game-card:hover .arrow, .game-card:focus-visible .arrow {
+  transform: translate(3px, -3px);
+  color: var(--accent);
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  position: relative;
+  z-index: 1;
+}
+
+.card-title {
+  font-family: "Syne", sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+  line-height: 1.1;
+  color: var(--text);
+}
+
+.card-desc {
+  font-size: 0.82rem;
+  color: var(--muted-2);
+  line-height: 1.55;
+  max-width: 36ch;
+}
+
+.card-num {
+  position: absolute;
+  right: 0.8rem;
+  bottom: 0.6rem;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 7rem;
+  line-height: 1;
+  color: var(--accent);
+  opacity: 0.055;
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 300ms ease;
+}
+.game-card:hover .card-num { opacity: 0.1; }
+
+.hub-footer {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.footer-link {
+  color: var(--muted-2);
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+.footer-link:hover { color: var(--accent); }
+
+@media (max-width: 720px) { .games-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) {
+  .games-grid { grid-template-columns: 1fr; }
+  .game-card { min-height: 160px; }
+  .card-num { font-size: 5rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-card, .card-glow, .arrow, .card-num, .game-card::before { transition: none; animation: none; }
+}
