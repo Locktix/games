@@ -1,0 +1,12 @@
+# Forward the Authorization header to PHP — Apache/CGI on o2switch strips it
+# otherwise, which breaks every authenticated Shady API call (Bearer token).
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+</IfModule>
+
+# Fallback for setups that honour CGIPassAuth.
+<IfModule mod_setenvif.c>
+    SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+</IfModule>

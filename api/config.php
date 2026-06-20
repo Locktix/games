@@ -20,6 +20,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 // ─────────────────────────────────────────────
+// Global error handling — return a JSON cause instead of an empty 500
+// ─────────────────────────────────────────────
+error_reporting(E_ALL);
+ini_set('display_errors', '0');
+
+set_exception_handler(function (Throwable $e): void {
+    error_log('[API] ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
+    if (!headers_sent()) {
+        http_response_code(500);
+        header('Content-Type: application/json; charset=utf-8');
+    }
+    echo json_encode(['error' => 'Erreur serveur', 'detail' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
+    exit;
+});
+
+register_shutdown_function(function (): void {
+    $err = error_get_last();
+    if ($err && in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
+        error_log('[API] FATAL ' . $err['message'] . ' @ ' . $err['file'] . ':' . $err['line']);
+        if (!headers_sent()) {
+            http_response_code(500);
+            header('Content-Type: application/json; charset=utf-8');
+        }
+        echo json_encode(['error' => 'Erreur serveur fatale', 'detail' => $err['message']], JSON_UNESCAPED_UNICODE);
+    }
+});
+
+// ─────────────────────────────────────────────
 // PDO singleton
 // ─────────────────────────────────────────────
 function getDb(): PDO {
@@ -61,7 +89,15 @@ function getBody(): array {
 // Auth helpers — Shady session token
 // ─────────────────────────────────────────────
 function getBearerToken(): ?string {
-    $header = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+    // Apache/CGI on shared hosting (o2switch) often drops the Authorization
+    // header; check the common fallbacks before giving up.
+    $header = $_SERVER['HTTP_AUTHORIZATION']
+        ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION']
+        ?? '';
+    if (!$header && function_exists('apache_request_headers')) {
+        $h = apache_request_headers();
+        $header = $h['Authorization'] ?? $h['authorization'] ?? '';
+    }
     if (preg_match('/Bearer\s+(.+)$/i', $header, $m)) {
         return trim($m[1]);
     }
